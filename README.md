@@ -11,8 +11,7 @@ Run on CloudLab
 -------
 #### 1. Set up the environment
 ```bash
-git clone https://github.com/jiange91/cerebro-system.git
-cd cerebro
+cd /local/repository
 ```
 Since the `bootstrap.sh` script is completed under Windows OS, need to manually change the file format.
 
