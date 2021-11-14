@@ -31,7 +31,7 @@ echo export SPARK_HOME="/usr/local/spark" >> ~/.bashrc;
 sudo cp /usr/local/spark/conf/spark-env.sh.template /usr/local/spark/conf/spark-env.sh;
 sudo cp /usr/local/spark/conf/slaves.template /usr/local/spark/conf/slaves;
 
-pip3 install -r /local/repository/requirements.txt;
+pip3 install -r requirements.txt;
 
 
 

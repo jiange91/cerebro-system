@@ -7,6 +7,25 @@ resource-efficient manner. Detailed technical information about ``Cerebro`` can 
 [Technical Report](https://adalabucsd.github.io/papers/TR_2020_Cerebro.pdf).
 
 
+Run on CloudLab
+-------
+#### 1. Set up the environment
+```bash
+git clone https://github.com/jiange91/cerebro-system.git
+cd cerebro
+```
+Since the `bootstrap.sh` script is completed under Windows OS, need to manually change the file format.
+
+```bash
+sed -i "s/\r//" bootstrap.sh
+```
+
+Then run the script to set up the environment
+```bash
+chmod 777 bootstrap.sh
+./bootstrap.sh
+```
+
 Install
 -------
 
