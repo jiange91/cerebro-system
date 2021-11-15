@@ -10,8 +10,13 @@ resource-efficient manner. Detailed technical information about ``Cerebro`` can 
 Run on CloudLab
 -------
 #### 1. Set up the environment
+
+You need to manually upload the profile.py to create a Profile on CloudLab, since the file profile.py will cause
+contradiction with PySpark and cause ImportError, I did not put it in this repository.
+
 ```bash
-cd /local/repository
+git clone https://github.com/jiange91/cerebro-system.git
+cd cerebro-system
 ```
 Since the `bootstrap.sh` script is completed under Windows OS, need to manually change the file format.
 

@@ -35,7 +35,6 @@ pip3 install --upgrade pip
 pip3 install -r /local/repository/requirements.txt;
 
 
-
 # setup hadoop
 HADOOP_HOME=/local/hadoop
 mkdir $HADOOP_HOME

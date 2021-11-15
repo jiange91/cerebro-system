@@ -67,3 +67,4 @@ DTYPE_FLOAT = 'dtype_float'
 MS_GRID_SEARCH = 'GridSearch'
 MS_RANDOM_SEARCH = 'RandomSearch'
 MS_HYPEROPT_SEARCH = 'HyperOpt'
+
