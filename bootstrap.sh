@@ -90,7 +90,7 @@ sudo /usr/local/bin/jupyter nbextension enable collapsible_headings/main --syste
 sudo /usr/local/bin/jupyter nbextension enable freeze/main --system ;
 sudo /usr/local/bin/jupyter nbextension enable spellchecker/main --system ;
 
-echo "export PATH=~/.local/bin" | sudo tee -a ~/.bashrc
+echo "export EXE_PATH=~/.local/bin" | sudo tee -a ~/.bashrc
 source ~/.bashrc
 
 # Jupyter password
@@ -123,6 +123,10 @@ elif [ "$duty" = "s" ]; then
   $HADOOP_PREFIX/sbin/hadoop-daemons.sh --script hdfs start datanode
   $HADOOP_PREFIX/sbin/yarn-daemons.sh start nodemanager
 fi
+
+# Tmux
+sudo apt-get install tmux
+
 echo "Bootstraping complete"
 
 
