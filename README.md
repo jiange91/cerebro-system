@@ -31,10 +31,11 @@ sed -i "s/\r//" bootstrap.sh
 
 Then run the script to set up the environment
 ```bash
-chmod 777 bootstrap.sh
-./bootstrap.sh
+sudo chmod 777 bootstrap.sh
+sudo ./bootstrap.sh
 ```
 
+Note that please do not leave the `sudo` when execute the `bootstrap.sh`.
 
 Install
 -------
