@@ -32,7 +32,7 @@ sudo cp /usr/local/spark/conf/spark-env.sh.template /usr/local/spark/conf/spark-
 sudo cp /usr/local/spark/conf/slaves.template /usr/local/spark/conf/slaves;
 
 pip3 install --upgrade pip
-pip3 install -r requirements.txt;
+pip3 install -r requirements.txt --ignore-installed
 
 
 # setup hadoop
