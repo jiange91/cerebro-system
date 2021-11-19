@@ -35,7 +35,13 @@ sudo chmod 777 bootstrap.sh
 sudo ./bootstrap.sh
 ```
 
-Note that please do not leave the `sudo` when execute the `bootstrap.sh`.
+Note that please DO NOT miss the `sudo` when execute the `bootstrap.sh`.
+
+When the environment is successfully set, you will see a message in the console saying:
+
+```bash
+```
+
 
 Install
 -------
