@@ -40,7 +40,14 @@ Note that please DO NOT miss the `sudo` when execute the `bootstrap.sh`.
 When the environment is successfully set, you will see a message in the console saying:
 
 ```bash
+Bootstraping complete
 ```
+
+To run an experiment, you could directly run a Python file from the repository, but the process will be terminated
+once the console is closed. I have configed `tmux` in the environment. Check [this](https://blog.csdn.net/u014381600/article/details/54588531) 
+out for more information.
+
+You could also instantiate a Jupyter notebook.
 
 
 Install
