@@ -43,11 +43,15 @@ HOST_LIST_PATH=/local/host_list
 JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:bin/java::")
 awk 'NR>1 {print $NF}' /etc/hosts | grep -v 'master' > $HOST_LIST_PATH
 
-
+echo "test1"
 cd /mnt
+echo "test2"
 wget https://archive.apache.org/dist/hadoop/core/hadoop-2.7.3/hadoop-2.7.3.tar.gz
+echo "test3"
 tar -xvf hadoop-2.7.3.tar.gz
+echo "test4"
 cp -r /mnt/hadoop-2.7.3/. $HADOOP_HOME/.
+echo "test5"
 
 sudo cp $HOST_LIST_PATH $HADOOP_HOME/etc/hadoop/slaves
 echo "master" | sudo tee $HADOOP_HOME/etc/hadoop/workers
@@ -56,9 +60,9 @@ echo "export HADOOP_PREFIX=$HADOOP_HOME" | sudo tee -a ~/.bashrc
 echo "export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin" | sudo tee -a ~/.bashrc
 source ~/.bashrc
 echo "export JAVA_HOME=$JAVA_HOME" | sudo tee -a $HADOOP_HOME/etc/hadoop/hadoop-env.sh
-cp /local/repository/core-site.xml $HADOOP_HOME/etc/hadoop/core-site.xml
-cp /local/repository/yarn-site.xml /local/hadoop/etc/hadoop/yarn-site.xml
-cp /local/repository/hdfs-site.xml /local/hadoop/etc/hadoop/hdfs-site.xml
+cp core-site.xml $HADOOP_HOME/etc/hadoop/core-site.xml
+cp yarn-site.xml /local/hadoop/etc/hadoop/yarn-site.xml
+cp hdfs-site.xml /local/hadoop/etc/hadoop/hdfs-site.xml
 # Spark ips configs
 ips=($(ip -4 addr | grep -oP '(?<=inet\s)\d+(\.\d+){3}'))
 for ip in "${ips[@]}"

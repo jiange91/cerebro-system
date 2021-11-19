@@ -14,6 +14,11 @@ Run on CloudLab
 You need to manually upload the profile.py to create a Profile on CloudLab, since the file profile.py will cause
 contradiction with PySpark and cause ImportError, I did not put it in this repository.
 
+When creating an experiment on CloudLab, a node with hardware type that has higher disk size and memory size is more ideal. 
+But it is not always possible to get an available one. Check [cluster status](https://www.cloudlab.us/resinfo.php) here
+
+After entering the shell of a node:
+ 
 ```bash
 git clone https://github.com/jiange91/cerebro-system.git
 cd cerebro-system
