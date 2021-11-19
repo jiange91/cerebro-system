@@ -90,6 +90,9 @@ sudo /usr/local/bin/jupyter nbextension enable collapsible_headings/main --syste
 sudo /usr/local/bin/jupyter nbextension enable freeze/main --system ;
 sudo /usr/local/bin/jupyter nbextension enable spellchecker/main --system ;
 
+echo "export PATH=~/.local/bin" | sudo tee -a ~/.bashrc
+sudo source ~/.bashrc
+
 # Jupyter password
 mkdir -p ~/.jupyter;
 HASHED_PASSWORD=$(python3.6 -c "from notebook.auth import passwd; print(passwd('$JUPYTER_PASSWORD'))");
