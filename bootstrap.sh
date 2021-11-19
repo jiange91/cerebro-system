@@ -81,6 +81,7 @@ echo "export PYSPARK_PYTHON=python3.6" | sudo tee -a /usr/local/spark/conf/spark
 
 
 # Jupyter extension configs
+pip3 install jupyter_contrib_nbextensions
 sudo /usr/local/bin/jupyter contrib nbextension install --system ;
 sudo /usr/local/bin/jupyter nbextensions_configurator enable --system ;
 sudo /usr/local/bin/jupyter nbextension enable code_prettify/code_prettify --system ;
