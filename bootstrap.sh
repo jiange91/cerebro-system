@@ -91,7 +91,6 @@ sudo /usr/local/bin/jupyter nbextension enable freeze/main --system ;
 sudo /usr/local/bin/jupyter nbextension enable spellchecker/main --system ;
 
 echo "export PATH=~/.local/bin" | sudo tee -a ~/.bashrc
-sudo -s
 source ~/.bashrc
 
 # Jupyter password
