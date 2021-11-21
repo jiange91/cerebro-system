@@ -51,5 +51,6 @@ tuner.search(
     X_train,
     y_train,
     validation_split=0.15,
-    epochs=10
+    epochs=10,
+    callbacks=[tf.keras.callbacks.TensorBoard("./keras_tuner_log")]
 )
