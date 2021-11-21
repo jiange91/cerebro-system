@@ -41,7 +41,7 @@ def build_model(hp):
 
 tuner = kt.RandomSearch(
     build_model,
-    max_trials=27*4,
+    max_trials=27*9,
     overwrite=True,
     objective="val_accuracy",
     directory="./keras_tuner_log/"

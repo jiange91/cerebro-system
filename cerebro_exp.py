@@ -43,7 +43,7 @@ for layer1_num, layer2_num, layer3_num in trials:
         model.add(tf.keras.layers.Dense(3, input_dim=layer3_num, activation="softmax"))
 
         optimizer = tf.keras.optimizers.Adam(lr=params['lr'])
-        loss = 'binary_crossentropy'
+        loss = 'sparse_categorical_crossentropy'
 
         estimator = SparkEstimator(
             model=model,
@@ -61,7 +61,7 @@ for layer1_num, layer2_num, layer3_num in trials:
     }
 
     tuner = RandomSearch(backend=backend, store=store, estimator_gen_fn=estimator_gen_fn,
-                         search_space=search_space, num_models=4, num_epochs=10, validation=0.15,
+                         search_space=search_space, num_models=9, num_epochs=10, validation=0.15,
                          evaluation_metric='accuracy', feature_columns=['sepal width', 'sepal length', 'pedal width',
                                                                         'pedal length'],
                          label_columns=['labels'])
