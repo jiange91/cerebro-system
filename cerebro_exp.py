@@ -18,15 +18,14 @@ spark = SparkSession \
     .getOrCreate()
 
 # Load dataset
-df = spark.read.csv('./data/iris_training.csv', header=True)
-train_df, test_df = df.randomSplit([0.8, 0.2])
+df = spark.read.csv('./data/Iris_clean.csv', header=True)
 
 # Resources
 backend = SparkBackend(spark_context=spark.sparkContext, num_workers=1)
 store = LocalStore(prefix_path='./cerebro_logs/experiment/')
 
 trials = []
-node_numbers = [64, 96, 128]
+node_numbers = [32, 64, 96, 128]
 for num1 in node_numbers:
     for num2 in node_numbers:
         for num3 in node_numbers:
@@ -38,8 +37,11 @@ for layer1_num, layer2_num, layer3_num in trials:
         model = tf.keras.models.Sequential()
         model.add(tf.keras.layers.Input(shape=4, name='features'))
         model.add(tf.keras.layers.Dense(layer1_num, input_dim=4, activation="relu"))
+        model.add(tf.keras.layers.Dropout(rate=params["dropout_rate"]))
         model.add(tf.keras.layers.Dense(layer2_num, input_dim=layer1_num, activation="relu"))
+        model.add(tf.keras.layers.Dropout(rate=params["dropout_rate"]))
         model.add(tf.keras.layers.Dense(layer3_num, input_dim=layer2_num, activation="relu"))
+        model.add(tf.keras.layers.Dropout(rate=params["dropout_rate"]))
         model.add(tf.keras.layers.Dense(3, input_dim=layer3_num, activation="softmax"))
 
         optimizer = tf.keras.optimizers.Adam(lr=params['lr'])
@@ -56,15 +58,16 @@ for layer1_num, layer2_num, layer3_num in trials:
 
 
     search_space = {
-        'lr': hp_choice([0.01, 0.001, 0.0001]),
-        'batch_size': hp_quniform(16, 256, 16)
+        'lr': hp_choice([1e-2, 1e-3, 13-4]),
+        'batch_size': hp_quniform(16, 64, 16),
+        'dropout_rate': hp_choice([0.0, 0.1, 0.2, 0.3, 0.4, 0.5])
     }
 
     tuner = RandomSearch(backend=backend, store=store, estimator_gen_fn=estimator_gen_fn,
-                         search_space=search_space, num_models=9, num_epochs=10, validation=0.15,
-                         evaluation_metric='accuracy', feature_columns=['sepal width', 'sepal length', 'pedal width',
-                                                                        'pedal length'],
-                         label_columns=['labels'])
+                         search_space=search_space, num_models=72, num_epochs=20, validation=0.2,
+                         evaluation_metric='accuracy', feature_columns=['SepalLengthCm', 'SepalWidthCm',
+                                                                        'PetalLengthCm', 'PetalWidthCm'],
+                         label_columns=['Species'])
 
-    model = tuner.fit(train_df)
+    model = tuner.fit(df)
     model_history = model.get_history()

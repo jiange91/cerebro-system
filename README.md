@@ -49,6 +49,9 @@ out for more information.
 
 You could also instantiate a Jupyter notebook.
 
+Note that if you use this script to initialize the environment in the profile, please make sure that you have at least
+one slave node in the LAN. This could be defined during the initialization process of CloudLab experiments.
+
 
 Install
 -------
