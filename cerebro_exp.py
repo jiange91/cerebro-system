@@ -41,8 +41,8 @@ for num1 in node_numbers:
 for layer1_num, layer2_num in trials:
     def estimator_gen_fn(params):
         inputs = [tf.keras.Input(shape=(1,)) for _ in feature_cols]
-        inputs = tf.keras.layers.Concatenate()(inputs)
-        layer1_output = tf.keras.layers.Dense(layer1_num, activation="relu")(inputs)
+        concat = tf.keras.layers.Concatenate()(inputs)
+        layer1_output = tf.keras.layers.Dense(layer1_num, activation="relu")(concat)
         layer1_dropout = tf.keras.layers.Dropout(rate=params["dropout_rate"])(layer1_output)
 
         layer2_output = tf.keras.layers.Dense(layer2_num, activation="relu")(layer1_dropout)
