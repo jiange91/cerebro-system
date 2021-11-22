@@ -1,3 +1,4 @@
+import os
 import tensorflow as tf
 from pyspark.sql import SparkSession
 from cerebro.backend import SparkBackend
@@ -6,6 +7,7 @@ from cerebro.storage import LocalStore
 from cerebro.tune import RandomSearch
 from cerebro.tune import hp_choice, hp_quniform
 
+os.environ["PYSPARK_PYTHON"] = '/user/bin/python3.6'
 
 """
 The convergence speed experiment of Cerebro vs AutoKeras
