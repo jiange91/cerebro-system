@@ -1,6 +1,7 @@
 import tensorflow as tf
 import pandas as pd
 import keras_tuner as kt
+from sklearn.preprocessing import OneHotEncoder
 
 
 """
@@ -15,7 +16,10 @@ print("Dataset shape: {}".format(dataframe.shape))
 
 data = dataframe.values.astype("float32")
 X, y = data[:, :-1], data[:, -1]
+y = y.reshape(-1, 1)
 
+encoder = OneHotEncoder()
+y = encoder.fit_transform(y).toarray()
 
 def build_model(hp):
     inputs = tf.keras.Input(shape=4)
@@ -33,7 +37,7 @@ def build_model(hp):
 
     # Compile
     model.compile(
-        loss="sparse_categorical_crossentropy",
+        loss="categorical_crossentropy",
         metrics=["accuracy"],
         optimizer=tf.keras.optimizers.Adam(
             hp.Choice("learning_rate", values=[1e-2, 1e-3, 1e-4])

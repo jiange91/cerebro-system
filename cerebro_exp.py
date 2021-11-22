@@ -1,7 +1,7 @@
 import os
 import tensorflow as tf
 from pyspark.sql import SparkSession
-from pyspark.ml.feature import VectorAssembler
+from pyspark.ml.feature import VectorAssembler, OneHotEncoder
 from cerebro.backend import SparkBackend
 from cerebro.keras import SparkEstimator
 from cerebro.storage import LocalStore
@@ -26,7 +26,9 @@ df = spark.read.csv('./data/Iris_clean.csv', header=True, inferSchema=True)
 assembler = VectorAssembler(inputCols=feature_cols, outputCol="features")
 df = assembler.transform(df)
 df = df.drop('SepalLengthCm').drop('SepalWidthCm').drop('PetalLengthCm').drop('PetalWidthCm')
-
+encoder = OneHotEncoder(inputCol="Species", outputCol="labels")
+df = encoder.transform(df)
+df = df.drop('Species')
 
 # Resources
 backend = SparkBackend(spark_context=spark.sparkContext, num_workers=1)
@@ -53,7 +55,7 @@ for layer1_num, layer2_num, layer3_num in trials:
         model.add(tf.keras.layers.Dense(3, input_dim=layer3_num, activation="softmax"))
 
         optimizer = tf.keras.optimizers.Adam(lr=params['lr'])
-        loss = 'sparse_categorical_crossentropy'
+        loss = 'categorical_crossentropy'
 
         estimator = SparkEstimator(
             model=model,
@@ -73,7 +75,7 @@ for layer1_num, layer2_num, layer3_num in trials:
 
     tuner = RandomSearch(backend=backend, store=store, estimator_gen_fn=estimator_gen_fn,
                          search_space=search_space, num_models=72, num_epochs=20, validation=0.2,
-                         evaluation_metric='accuracy', feature_columns=["features"], label_columns=['Species'])
+                         evaluation_metric='accuracy', feature_columns=["features"], label_columns=['labels'])
 
     model = tuner.fit(df)
     model_history = model.get_history()
