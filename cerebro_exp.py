@@ -25,7 +25,9 @@ feature_cols = ['SepalLengthCm', 'SepalWidthCm', 'PetalLengthCm', 'PetalWidthCm'
 df = spark.read.csv('./data/Iris_clean.csv', header=True, inferSchema=True)
 assembler = VectorAssembler(inputCols=feature_cols, outputCol="features")
 df = assembler.transform(df)
+df.printSchema()
 df = df.drop('SepalLengthCm').drop('SepalWidthCm').drop('PetalLengthCm').drop('PetalWidthCm')
+
 
 # Resources
 backend = SparkBackend(spark_context=spark.sparkContext, num_workers=1)
