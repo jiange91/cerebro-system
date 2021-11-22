@@ -24,7 +24,7 @@ df = spark.read.csv('./data/Iris_clean.csv', header=True)
 
 # Resources
 backend = SparkBackend(spark_context=spark.sparkContext, num_workers=1)
-store = LocalStore(prefix_path='./cerebro_logs/experiment/')
+store = LocalStore(prefix_path='/cerebro_logs/experiment/')
 
 trials = []
 node_numbers = [32, 64, 96, 128]
