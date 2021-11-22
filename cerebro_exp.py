@@ -20,7 +20,7 @@ spark = SparkSession \
     .getOrCreate()
 
 # Load dataset
-df = spark.read.csv('./data/Iris_clean.csv', header=True)
+df = spark.read.csv('./data/Iris_clean.csv', header=True, inferSchema=True)
 
 # Resources
 backend = SparkBackend(spark_context=spark.sparkContext, num_workers=1)
