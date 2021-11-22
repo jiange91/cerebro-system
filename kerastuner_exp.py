@@ -24,7 +24,7 @@ y = encoder.fit_transform(y).toarray()
 def build_model(hp):
     inputs = tf.keras.Input(shape=4)
     x = inputs
-    for layer in range(3):
+    for layer in range(2):
         x = tf.keras.layers.Dense(
             units=hp.Int(f"units_{layer}", 32, 128, step=32), activation="relu",
         )(x)
@@ -48,7 +48,7 @@ def build_model(hp):
 
 tuner = kt.RandomSearch(
     build_model,
-    max_trials=64*72,  # To match with the cerebro experiment
+    max_trials=16*72,  # To match with the cerebro experiment
     overwrite=True,
     objective="val_accuracy",
     directory="./keras_tuner_log/"
