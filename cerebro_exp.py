@@ -1,6 +1,7 @@
 import os
 import tensorflow as tf
 from pyspark.sql import SparkSession
+from pyspark.ml.feature import VectorAssembler
 from cerebro.backend import SparkBackend
 from cerebro.keras import SparkEstimator
 from cerebro.storage import LocalStore
@@ -20,7 +21,11 @@ spark = SparkSession \
     .getOrCreate()
 
 # Load dataset
+feature_cols = ['SepalLengthCm', 'SepalWidthCm', 'PetalLengthCm', 'PetalWidthCm']
 df = spark.read.csv('./data/Iris_clean.csv', header=True, inferSchema=True)
+assembler = VectorAssembler(inputCols=feature_cols, outputCol="features")
+df = assembler.transform(df)
+df = df.drop('SepalLengthCm').drop('SepalWidthCm').drop('PetalLengthCm').drop('PetalWidthCm')
 
 # Resources
 backend = SparkBackend(spark_context=spark.sparkContext, num_workers=1)
@@ -38,7 +43,7 @@ for layer1_num, layer2_num, layer3_num in trials:
     def estimator_gen_fn(params):
         model = tf.keras.models.Sequential()
         model.add(tf.keras.layers.Input(shape=4, name='features'))
-        model.add(tf.keras.layers.Dense(layer1_num, input_dim=4, activation="relu"))
+        model.add(tf.keras.layers.Dense(layer1_num, input_dim=(4,), activation="relu"))
         model.add(tf.keras.layers.Dropout(rate=params["dropout_rate"]))
         model.add(tf.keras.layers.Dense(layer2_num, input_dim=layer1_num, activation="relu"))
         model.add(tf.keras.layers.Dropout(rate=params["dropout_rate"]))
@@ -67,9 +72,7 @@ for layer1_num, layer2_num, layer3_num in trials:
 
     tuner = RandomSearch(backend=backend, store=store, estimator_gen_fn=estimator_gen_fn,
                          search_space=search_space, num_models=72, num_epochs=20, validation=0.2,
-                         evaluation_metric='accuracy', feature_columns=['SepalLengthCm', 'SepalWidthCm',
-                                                                        'PetalLengthCm', 'PetalWidthCm'],
-                         label_columns=['Species'])
+                         evaluation_metric='accuracy', feature_columns=feature_cols, label_columns=['Species'])
 
     model = tuner.fit(df)
     model_history = model.get_history()

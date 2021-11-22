@@ -52,6 +52,8 @@ You could also instantiate a Jupyter notebook.
 Note that if you use this script to initialize the environment in the profile, please make sure that you have at least
 one slave node in the LAN. This could be defined during the initialization process of CloudLab experiments.
 
+If you are running a cerebro system experiment, please also make sure that you use `sudo` for read and write permissions 
+when you call `python3 some_script_name.py`.
 
 Install
 -------
