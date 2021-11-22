@@ -17,7 +17,7 @@ Iris dataset
 
 spark = SparkSession \
     .builder \
-    .appName("Cerebro Example") \
+    .appName("Cerebro Iris Experiment") \
     .getOrCreate()
 
 # Load dataset
@@ -46,7 +46,7 @@ for layer1_num, layer2_num, layer3_num in trials:
     def estimator_gen_fn(params):
         model = tf.keras.models.Sequential()
         model.add(tf.keras.layers.Input(shape=4, name='features'))
-        model.add(tf.keras.layers.Dense(layer1_num, input_dim=(4,), activation="relu"))
+        model.add(tf.keras.layers.Dense(layer1_num, input_dim=4, activation="relu"))
         model.add(tf.keras.layers.Dropout(rate=params["dropout_rate"]))
         model.add(tf.keras.layers.Dense(layer2_num, input_dim=layer1_num, activation="relu"))
         model.add(tf.keras.layers.Dropout(rate=params["dropout_rate"]))
@@ -68,7 +68,7 @@ for layer1_num, layer2_num, layer3_num in trials:
 
 
     search_space = {
-        'lr': hp_choice([1e-2, 1e-3, 13-4]),
+        'lr': hp_choice([1e-2, 1e-3, 1e-4]),
         'batch_size': hp_quniform(16, 64, 16),
         'dropout_rate': hp_choice([0.0, 0.1, 0.2, 0.3, 0.4, 0.5])
     }
