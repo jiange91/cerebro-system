@@ -90,7 +90,7 @@ sudo /usr/local/bin/jupyter nbextension enable collapsible_headings/main --syste
 sudo /usr/local/bin/jupyter nbextension enable freeze/main --system ;
 sudo /usr/local/bin/jupyter nbextension enable spellchecker/main --system ;
 
-echo "export EXE_PATH=~/.local/bin" | sudo tee -a ~/.bashrc
+echo "export EXE_PATH=~/usr/local/bin" | sudo tee -a ~/.bashrc
 source ~/.bashrc
 
 # Jupyter password
