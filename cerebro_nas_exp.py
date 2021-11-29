@@ -22,9 +22,9 @@ backend = SparkBackend(spark_context=sc, num_workers=2)
 store = LocalStore(prefix_path='cerebro_autokeras_exp')
 
 train_df = spark.read.format("parquet").option('header', 'true').option('inferSchema', 'true')\
-    .load('./data/petastorm_parquet/cerebro_spark_tmp/train_data/*.parquet')
+    .load('./data/parquet/train/*.parquet')
 test_df = spark.read.format("parquet").option('header', 'true').option('inferSchema', 'true')\
-    .load('./data/petastorm_parquet/cerebro_spark_tmp/val_data/*.parquet')
+    .load('./data/parquet/valid/*.parquet')
 
 
 # Define the search space
