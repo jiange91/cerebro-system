@@ -1,3 +1,4 @@
+import os
 import autokeras as ak
 from pyspark.sql import SparkSession
 from cerebro.backend import SparkBackend
@@ -8,6 +9,9 @@ from keras_tuner import HyperParameters
 """
 The experiment for autokeras + Cerebro
 """
+
+os.environ["PYSPARK_PYTHON"] = '/usr/bin/python3.6'
+os.environ["PYSPARK_DRIVER_PYTHON"] = '/usr/bin/python3.6'
 
 # Build the SparkSession
 spark = SparkSession.builder \
