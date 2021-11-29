@@ -453,6 +453,7 @@ class SparkModel(PySparkModel, SparkModelParams, SparkEstimatorParamsReadable, S
         def predict(rows):
             from pyspark import Row
             from pyspark.ml.linalg import DenseVector, SparseVector
+            from pyspark.sql.types import BinaryType
 
             k = keras_utils.keras()
             k.backend.set_floatx(floatx)
@@ -487,7 +488,6 @@ class SparkModel(PySparkModel, SparkModelParams, SparkEstimatorParamsReadable, S
                      for i in range(len(feature_cols))])
 
                 preds = [to_numpy(item) for item in preds]
-
                 for label_col, output_col, pred, in zip(label_cols, output_cols, preds):
                     meta = metadata[label_col]
                     col_type = meta['spark_data_type']
@@ -502,6 +502,10 @@ class SparkModel(PySparkModel, SparkModelParams, SparkEstimatorParamsReadable, S
                         nonzero_indices = flattened_pred.nonzero()[0]
                         field = SparseVector(shape, nonzero_indices,
                                              flattened_pred[nonzero_indices])
+                    elif col_type == BinaryType:
+                        shape = np.prod(pred.shape)
+                        flattened_pred = pred.reshape(shape, )
+                        field = DenseVector(flattened_pred)
                     else:
                         # If the column is scalar type, int, float, etc.
                         value = pred[0]
