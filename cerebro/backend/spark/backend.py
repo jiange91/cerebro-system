@@ -492,6 +492,7 @@ def sub_epoch_trainer(estimator, metadata, keras_utils, run_id, dataset_idx, tra
 
             if is_train:
                 train_data = make_dataset(data_reader, shuffle_buffer_size, shuffle=False)
+
                 initialization_time = time.time() - begin_time
                 begin_time = time.time()
                 result = fit_sub_epoch_fn(starting_epoch, model, train_data, steps_per_epoch, callbacks,
@@ -522,7 +523,6 @@ def sub_epoch_trainer(estimator, metadata, keras_utils, run_id, dataset_idx, tra
                 print('CEREBRO => Time: {}, Model: {}, Mode: {}, Initialization Time: {}, Training Time: {}, '
                       'Finalization Time: {}'.format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                         run_id, 'TRAIN' if is_train else 'VALID', initialization_time, training_time, finalization_time))
-
             return result, step_counter_callback.get_step_count()
 
     return train
