@@ -18,7 +18,7 @@ spark = SparkSession.builder \
 
 sc = spark.sparkContext
 
-backend = SparkBackend(spark_context=sc, num_workers=3)
+backend = SparkBackend(spark_context=sc, num_workers=2)
 store = LocalStore(prefix_path='cerebro_autokeras_exp')
 
 train_df = spark.read.format("parquet").option('header', 'true').option('inferSchema', 'true')\
@@ -40,10 +40,8 @@ am.resource_bind(backend=backend, store=store)
 hp = HyperParameters()
 am.tuner_bind("randomsearch", hyperparameters=hp)
 
-am.fit(train_df, epochs=5)
+model = am.fit(train_df, epochs=5)
 
 
 with open("cerebro_nas_result/metrics.txt", "w") as file:
-    am.writelines()
-am.tuner.search_space_summary()
-
+    file.writelines(model.metrics)
