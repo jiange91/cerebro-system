@@ -22,8 +22,8 @@ spark = SparkSession.builder \
 
 sc = spark.sparkContext
 
-backend = SparkBackend(spark_context=sc, num_workers=6)
-store = LocalStore(prefix_path='cerebro_autokeras_exp')
+backend = SparkBackend(spark_context=sc, num_workers=2)
+store = LocalStore(prefix_path='/cerebro_autokeras_exp/')
 
 TRAIN_NUM = 10000
 TEST_NUM = 1000
