@@ -29,7 +29,8 @@ test_df = spark.read.format("parquet").option('header', 'true').option('inferSch
 
 # Define the search space
 input_node = ak.StructuredDataInput()
-output_node = ak.ClassificationHead()(input_node)
+otuput_node = ak.DenseBlock()(input_node)
+output_node = ak.ClassificationHead()(otuput_node)
 
 am = HyperHyperModel(
     inputs=input_node, outputs=output_node, overwrite=True, max_trials=8
