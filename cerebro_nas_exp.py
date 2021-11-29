@@ -25,8 +25,8 @@ sc = spark.sparkContext
 backend = SparkBackend(spark_context=sc, num_workers=6)
 store = LocalStore(prefix_path='cerebro_autokeras_exp')
 
-TRAIN_NUM = 20000
-TEST_NUM = 2000
+TRAIN_NUM = 10000
+TEST_NUM = 1000
 
 train_df = spark.read.format("parquet").option('header', 'true').option('inferSchema', 'true')\
     .load('./data/parquet/train/*.parquet')
@@ -45,14 +45,9 @@ print("Use {:%} of testing data, with {} rows in the original data".format(test_
 train_df.printSchema()
 test_df.printSchema()
 
-train_rows = train_df.head(TRAIN_NUM)
-train_df = spark.createDataFrame(train_rows)
+train_df = train_df.limit(TRAIN_NUM)
 
-test_rows = test_df.head(TEST_NUM)
-test_df = spark.createDataFrame(test_rows)
-
-train_df.showSchema()
-test_df.showSchema()
+test_df = test_df.limit(TEST_NUM)
 
 # Define the search space
 input_node = ak.StructuredDataInput()
