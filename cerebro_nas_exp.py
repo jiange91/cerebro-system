@@ -26,6 +26,9 @@ train_df = spark.read.format("parquet").option('header', 'true').option('inferSc
 test_df = spark.read.format("parquet").option('header', 'true').option('inferSchema', 'true')\
     .load('./data/parquet/valid/*.parquet')
 
+train_df.printSchema()
+test_df.printSchema()
+
 
 # Define the search space
 input_node = ak.StructuredDataInput()
@@ -36,7 +39,7 @@ am = HyperHyperModel(
     inputs=input_node, outputs=output_node, overwrite=True, max_trials=8
 )
 
-am.resource_bind(backend=backend, store=store)
+am.resource_bind(backend=backend, store=store, label_columns=["labels"], feature_columns=["features"])
 
 hp = HyperParameters()
 am.tuner_bind("randomsearch", hyperparameters=hp)
