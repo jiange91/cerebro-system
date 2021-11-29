@@ -76,7 +76,7 @@ master_ip=$(gethostip -d master);
 echo "export master_ip=$master_ip" | sudo tee -a ~/.bashrc
 echo "export SPARK_MASTER_HOST=$master_ip" | sudo tee -a /usr/local/spark/conf/spark-env.sh;
 echo "export SPARK_LOCAL_IP=$LOCAL_IP" | sudo tee -a /usr/local/spark/conf/spark-env.sh;
-echo "export PYSPARK_PYTHON=python3.6" | sudo tee -a /usr/local/spark/conf/spark-env.sh;
+echo "export PYSPARK_PYTHON=/usr/bin/python3.6" | sudo tee -a /usr/local/spark/conf/spark-env.sh;
 
 
 
@@ -90,7 +90,7 @@ sudo /usr/local/bin/jupyter nbextension enable collapsible_headings/main --syste
 sudo /usr/local/bin/jupyter nbextension enable freeze/main --system ;
 sudo /usr/local/bin/jupyter nbextension enable spellchecker/main --system ;
 
-echo "export EXE_PATH=~/usr/local/bin" | sudo tee -a ~/.bashrc
+echo "export EXE_PATH=~/.local/bin" | sudo tee -a ~/.bashrc
 source ~/.bashrc
 
 # Jupyter password
