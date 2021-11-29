@@ -18,16 +18,13 @@ spark = SparkSession.builder \
 
 sc = spark.sparkContext
 
-backend = SparkBackend(spark_context=sc, num_workers=4)
+backend = SparkBackend(spark_context=sc, num_workers=3)
 store = LocalStore(prefix_path='cerebro_autokeras_exp')
 
 train_df = spark.read.format("parquet").option('header', 'true').option('inferSchema', 'true')\
-    .load('./data/parquet/train/*.parquet')
+    .load('./data/petastorm_parquet/cerebro_spark_tmp/train_data/*.parquet')
 test_df = spark.read.format("parquet").option('header', 'true').option('inferSchema', 'true')\
-    .load('./data/parquet/test/*.parquet')
-
-train_df.printSchema()
-test_df.printSchema()
+    .load('./data/petastorm_parquet/cerebro_spark_tmp/val_data/*.parquet')
 
 
 # Define the search space
@@ -45,5 +42,8 @@ am.tuner_bind("randomsearch", hyperparameters=hp)
 
 am.fit(train_df, epochs=5)
 
+
+with open("cerebro_nas_result/metrics.txt", "w") as file:
+    am.writelines()
 am.tuner.search_space_summary()
 

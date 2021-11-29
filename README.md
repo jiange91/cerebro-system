@@ -43,6 +43,18 @@ When the environment is successfully set, you will see a message in the console 
 Bootstraping complete
 ```
 
+For the master node, to download the Criteo dataset, please also add permissions to the script `download_data.sh`
+and run this script in the above manner.
+
+```bash
+sed -i "s/\r//" download_data.sh
+sudo chmod 777 download_data.sh
+sudo ./download_data.sh
+```
+
+The `download_data.sh` script uses [GDrive](https://github.com/prasmussen/gdrive) to download data from Google Drive and
+will ask for a verification code. Copy the url it gives you and paste it in the browser, and then you could  
+
 To run an experiment, you could directly run a Python file from the repository, but the process will be terminated
 once the console is closed. I have configed `tmux` in the environment. Check [this](https://blog.csdn.net/u014381600/article/details/54588531) 
 out for more information.
