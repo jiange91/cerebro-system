@@ -25,8 +25,8 @@ sc = spark.sparkContext
 backend = SparkBackend(spark_context=sc, num_workers=2)
 store = LocalStore(prefix_path='/cerebro_autokeras_exp/')
 
-TRAIN_NUM = 10000
-TEST_NUM = 1000
+TRAIN_NUM = 1000
+TEST_NUM = 100
 
 train_df = spark.read.format("parquet").option('header', 'true').option('inferSchema', 'true')\
     .load('./data/parquet/train/*.parquet')

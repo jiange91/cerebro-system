@@ -405,7 +405,6 @@ def get_simple_meta_from_parquet(store, schema_cols, sample_weight_col=None, dat
             'max_size': None  # Only used by SparseVector columns
         }
         metadata[col] = col_info
-
     avg_row_size = total_byte_size / train_rows
     return train_rows, val_rows, metadata, avg_row_size
 

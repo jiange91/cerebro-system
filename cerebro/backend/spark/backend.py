@@ -426,6 +426,7 @@ def sub_epoch_trainer(estimator, metadata, keras_utils, run_id, dataset_idx, tra
 
     # Model parameters
     input_shapes, output_shapes = estimator.get_model_shapes()
+    # print(input_shapes)
     output_names = estimator.getModel().output_names
 
     floatx = tf.keras.backend.floatx()

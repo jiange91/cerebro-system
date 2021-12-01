@@ -1,7 +1,7 @@
 
 from .tuners.randsearch import RandomSearch
 from .tuners.gridsearch import GridSearch
-from .tuners.hyperband import Hyperband
+# from .tuners.hyperband import Hyperband
 from .sparktuner import SparkTuner
 from ..keras.spark.estimator import SparkEstimator
 
@@ -16,7 +16,7 @@ import tensorflow as tf
 from tensorflow.python.util import nest
 import datetime
 
-from autokeras import blocks
+from autokeras import blocks, ImageBlock
 from autokeras import graph as graph_module
 from autokeras import pipeline
 from autokeras import tuners
@@ -32,7 +32,7 @@ from keras_tuner import HyperParameters
 from ..tune.base import ModelSelection
 
 NAS_TUNERS = {
-    "hyperband": Hyperband,
+    # "hyperband": Hyperband,
     "gridsearch": GridSearch,
     "randomsearch": RandomSearch,
 }
@@ -196,6 +196,7 @@ class HyperHyperModel(object):
         epochs=None,
         callbacks=None,
         verbose=1,
+        input_shape = None,
         **kwargs
     ):
 
@@ -218,11 +219,17 @@ class HyperHyperModel(object):
             'CEREBRO => Time: {}, Initializing Data Loaders'.format(
                 datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
         backend.initialize_data_loaders(ms.store, None, ms.feature_cols + ms.label_cols)
-
-        x = np.array(df.select(ms.feature_cols).collect())
-        y = np.array(df.select(ms.label_cols).collect())
-        x = [x[:,i,np.newaxis] for i in range(x.shape[1])]
-        y = np.squeeze(y,1)
+        if input_shape and type(input_shape) is int or type(input_shape) is tuple:
+            x = np.array(df.select(ms.feature_cols).head(100))
+            y = np.array(df.select(ms.label_cols).head(100))
+            x = [x[:,i] for i in range(x.shape[1])]
+            x = [r.reshape((-1, *input_shape)) for r in x]
+            y = np.squeeze(y,1)
+        else:
+            x = np.array(df.select(ms.feature_cols).head(100))
+            y = np.array(df.select(ms.label_cols).head(100))
+            x = [x[:,i,...,np.newaxis] for i in range(x.shape[1])]
+            y = np.squeeze(y,1)
         if len(y.shape) > 2:
             raise ValueError(
                 "We do not support multiple labels. Expect the target data for {name} to have shape "
@@ -468,9 +475,9 @@ class HyperHyperModel(object):
         **kwargs
     ):
         ms = self.model_selection
-        x = np.array(df.select(ms.feature_cols).collect())
-        y = np.array(df.select(ms.label_cols).collect())
-        x = [x[:,i,np.newaxis] for i in range(x.shape[1])]
+        x = np.array(df.select(ms.feature_cols).head(100))
+        y = np.array(df.select(ms.label_cols).head(100))
+        x = [x[:,i,...,np.newaxis] for i in range(x.shape[1])]
         y = np.squeeze(y,1)
         dataset, validation_data = self._convert_to_dataset(
             x=x, y=y, validation_data=None, batch_size=batch_size
@@ -482,3 +489,22 @@ class HyperHyperModel(object):
             epochs=epochs,
             **kwargs
         )
+
+    def sys_setup(self, df):
+        ms = self.model_selection
+        backend = ms.backend
+
+        if ms.verbose >= 1: print(
+            'CEREBRO => Time: {}, Preparing Data'.format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+        train_rows, val_rows, metadata, avg_row_size = backend.prepare_data(ms.store, df, ms.validation, label_columns=ms.label_cols, feature_columns=ms.feature_cols)
+
+        if ms.verbose >= 1: print(
+            'CEREBRO => Time: {}, Initializing Workers'.format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+        # initialize backend and data loaders
+        backend.initialize_workers()
+
+        if ms.verbose >= 1: print(
+            'CEREBRO => Time: {}, Initializing Data Loaders'.format(
+                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+        backend.initialize_data_loaders(ms.store, None, ms.feature_cols + ms.label_cols)
+        return train_rows, val_rows, metadata, avg_row_size

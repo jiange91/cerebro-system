@@ -1,6 +1,3 @@
-from os import stat
-from h5py._hl import dataset
-
 import keras_tuner
 from tensorflow._api.v2 import data
 from .base import CerebroOracle
@@ -112,6 +109,7 @@ class RandomSearch(SparkTuner):
         self._prepare_model_IO(hp, dataset=dataset)
         self.hypermodel.build(hp)
         self.oracle.update_space(hp)
+        
         self.estimators = []
         self.estimator_results = {}
         self.on_search_begin()
