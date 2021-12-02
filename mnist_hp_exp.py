@@ -28,10 +28,10 @@ import os
 os.environ["PYSPARK_PYTHON"] = '/usr/bin/python3.6'
 os.environ["PYSPARK_DRIVER_PYTHON"] = '/usr/bin/python3.6'
 
-conf = SparkConf().setAppName('training') \
-    .setMaster('spark://training-cluster:7077') \
-    .set('spark.task.cpus', '2')
-spark = SparkSession.builder.config(conf=conf).getOrCreate()
+spark = SparkSession \
+    .builder \
+    .appName("Cerebro Example") \
+    .getOrCreate()
 
 ...
 work_dir = '/mnist_hp_exp/'

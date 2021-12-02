@@ -28,7 +28,7 @@ spark = SparkSession \
 
 ...
 work_dir = '/mnist_nas_exp/'
-backend = SparkBackend(spark_context=spark.sparkContext, num_workers=1)
+backend = SparkBackend(spark_context=spark.sparkContext, num_workers=2)
 store = LocalStore(prefix_path=work_dir + 'test/')
 
 df = spark.read.format("libsvm") \
