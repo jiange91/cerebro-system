@@ -31,6 +31,7 @@ from petastorm.codecs import ScalarCodec, NdarrayCodec
 from petastorm.etl.dataset_metadata import materialize_dataset
 from petastorm.fs_utils import FilesystemResolver
 from .. import constants
+import time
 
 
 def data_type_to_str(dtype):
@@ -441,8 +442,11 @@ def _train_val_split(df, validation):
 def _create_dataset(store, df, feature_columns, label_columns,
                     validation, sample_weight_col, compress_sparse,
                     num_partitions, num_workers, dataset_idx, parquet_row_group_size_mb, verbose):
+    tic = time.time()
     train_data_path = store.get_train_data_path(dataset_idx)
     val_data_path = store.get_val_data_path(dataset_idx)
+    toc = time.time()
+    print("get_dara_path function running time: %d seconds" % (toc - tic))
     if verbose >= 1:
         print('CEREBRO => Time: {}, Writing DataFrames'.format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
         print('CEREBRO => Time: {}, Train Data Path: {}'.format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -450,13 +454,17 @@ def _create_dataset(store, df, feature_columns, label_columns,
         print('CEREBRO => Time: {}, Val Data Path: {}'.format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                                              val_data_path))
 
+    tic = time.time()
     schema_cols = feature_columns + label_columns
     if sample_weight_col:
         schema_cols.append(sample_weight_col)
     if isinstance(validation, str):
         schema_cols.append(validation)
     df = df[schema_cols]
+    toc = time.time()
+    print("get schema cols function running time: %d seconds" % (toc - tic))
 
+    tic = time.time()
     metadata = None
     if _has_vector_column(df):
         if compress_sparse:
@@ -465,7 +473,10 @@ def _create_dataset(store, df, feature_columns, label_columns,
         df = df.rdd.map(to_petastorm).toDF()
 
     train_df, val_df, validation_ratio = _train_val_split(df, validation)
+    toc = time.time()
+    print("Train val split function running time: %d seconds" % (toc - tic))
 
+    tic = time.time()
     unischema_fields = []
     metadata = _get_metadata(train_df)
     for k in metadata.keys():
@@ -478,16 +489,23 @@ def _create_dataset(store, df, feature_columns, label_columns,
 
     train_partitions = max(int(num_partitions * (1.0 - validation_ratio)),
                            num_workers)
+    toc = time.time()
+    print("Get petastorm dataset function running time: %d seconds" % (toc - tic))
     if verbose >= 1:
         print('CEREBRO => Time: {}, Train Partitions: {}'.format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                                                 train_partitions))
 
+    tic = time.time()
     spark = SparkSession.builder.getOrCreate()
     # FIXME pass hdfs_driver from user interface instead of hardcoded PETASTORM_HDFS_DRIVER
     train_resolver = FilesystemResolver(train_data_path,
                                         spark.sparkContext._jsc.hadoopConfiguration(),
                                         user=spark.sparkContext.sparkUser(),
                                         hdfs_driver=constants.PETASTORM_HDFS_DRIVER)
+    toc = time.time()
+    print("Get train resolver function running time: %d seconds" % (toc - tic))
+
+    tic = time.time()
     with materialize_dataset(spark, train_data_path, petastorm_schema, parquet_row_group_size_mb,
                              filesystem_factory=train_resolver.filesystem_factory()):
         train_rdd = train_df.rdd.map(lambda x: x.asDict()).map(
@@ -500,6 +518,10 @@ def _create_dataset(store, df, feature_columns, label_columns,
             .mode('overwrite') \
             .parquet(train_data_path)
 
+    toc = time.time()
+    print("Materialize training set running time: %d seconds" % (toc - tic))
+
+    tic = time.time()
     if val_df:
         val_partitions = max(int(num_partitions * validation_ratio),
                              num_workers)
@@ -521,9 +543,14 @@ def _create_dataset(store, df, feature_columns, label_columns,
                 .write \
                 .mode('overwrite') \
                 .parquet(val_data_path)
+    toc = time.time()
+    print("Materialize validation set running time: %d seconds" % (toc - tic))
 
+    tic = time.time()
     train_rows, val_rows, pq_metadata, avg_row_size = get_simple_meta_from_parquet(
         store, label_columns + feature_columns, sample_weight_col, dataset_idx)
+    toc = time.time()
+    print("get_simple_meta_from_parquet function running time %d" % (toc - tic))
 
     if verbose:
         print(
@@ -558,8 +585,16 @@ def check_validation(validation, df=None):
 def prepare_data(num_workers, store, df, label_columns, feature_columns,
                  validation=None, sample_weight_col=None, compress_sparse=False,
                  num_partitions=None, parquet_row_group_size_mb=8, dataset_idx=None, verbose=0):
+
+    tic = time.time()
     check_validation(validation, df=df)
+    toc = time.time()
+    print("chech_validation function runing time: %d seconds" % (toc-tic))
+
+    tic = time.time()
     num_partitions = num_partitions or df.rdd.getNumPartitions()
+    toc = time.time()
+    print("getNumPartitions function runing time: %d seconds" % (toc - tic))
     if num_workers <= 0 or num_partitions <= 0:
         raise ValueError('num_workers={} and partitions_per_process: {} must both be > 0'
                          .format(num_workers, num_partitions))
