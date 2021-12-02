@@ -321,14 +321,18 @@ class GreedySearch(SparkTuner):
         estimators = self.trials2estimators(trials, fit_kwargs["x"])
         ms = self.model_selection
         est_results = {model.getRunId():{'trial':trial} for trial, model in zip(trials, estimators)}
+        est_results_log = {model.getRunId():{} for trial, model in zip(trials, estimators)}
 
         for epoch in range(epochs):
             train_epoch = ms.backend.train_for_one_epoch(estimators, ms.store, dataset_idx, ms.feature_cols, ms.label_cols)
             update_model_results(est_results, train_epoch)
+            update_model_results(est_results_log, train_epoch)
 
             val_epoch = ms.backend.train_for_one_epoch(estimators, ms.store, dataset_idx, ms.feature_cols, ms.label_cols, is_train=False)
             update_model_results(est_results, val_epoch)
+            update_model_results(est_results_log, val_epoch)
             self.on_epoch_end(estimators=estimators, est_resutls=est_results, epoch=epoch)
+            ms._log_epoch_metrics_to_tensorboard(estimators, est_results_log)
         
         for est in estimators:
             self.estimators.append(est)
