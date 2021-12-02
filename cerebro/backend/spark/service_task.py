@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
+import pyspark
 import socket
 import threading
 import traceback
@@ -21,7 +21,6 @@ import tensorflow as tf
 from distutils.version import LooseVersion
 
 import psutil
-import pyspark
 from six.moves import queue, socketserver
 
 from .service_common import find_port, PingResponse, PingRequest, NoValidAddressesFound, AckResponse, Wire
