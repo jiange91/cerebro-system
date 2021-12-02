@@ -1,5 +1,7 @@
 from random import Random
+from hyperopt.base import trials_from_docs
 import keras_tuner
+from numpy.lib.twodim_base import tri
 from tensorflow._api.v2 import data
 from .base import CerebroOracle
 from ..sparktuner import SparkTuner
@@ -80,6 +82,7 @@ class GreedyOracle(CerebroOracle):
         self.exploration = exploration
         self.initial_hps = initial_hps or []
         self._tried_initial_hps = [False] * len(self.initial_hps)
+        self._running_trials = []
         super().__init__(objective, max_trials=max_trials, hyperparameters=hyperparameters, allow_new_entries=allow_new_entries, tune_new_entries=tune_new_entries, seed=seed)
     
     def get_state(self):
@@ -216,7 +219,8 @@ class GreedyOracle(CerebroOracle):
                 status=status
             )
             if status == trial_lib.TrialStatus.RUNNING:
-                self.ongoing_trials[tuner_id] = trial
+                # self.ongoing_trials[tuner_id] = trial
+                self._running_trials.append(trial)
                 self.trials[trial_id] = trial
                 self.start_order.append(trial_id)
                 self._save_trial(trial)

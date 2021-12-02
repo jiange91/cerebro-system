@@ -17,6 +17,7 @@ class RandomSearchOracle(CerebroOracle):
         tune_new_entries=True, 
         seed=None):
 
+        self._running_trials = []
         super().__init__(objective, max_trials=max_trials, hyperparameters=hyperparameters, allow_new_entries=allow_new_entries, tune_new_entries=tune_new_entries, seed=seed)
 
     def populate_space(self, trial_id):
@@ -43,16 +44,14 @@ class RandomSearchOracle(CerebroOracle):
                 status=status
             )
             if status == trial_lib.TrialStatus.RUNNING:
-                self.ongoing_trials[tuner_id] = trial
+                # self.ongoing_trials[tuner_id] = trial
+                self._running_trials.append(trial)
                 self.trials[trial_id] = trial
                 self.start_order.append(trial_id)
                 self._save_trial(trial)
                 self.save()
             trials.append(trial)
         return trials
-    
-    def update_trial(self, trial_id, metrics, step):
-        super().update_trial(trial_id, metrics=metrics, step=step)
     
     def _init_search_space(self):
         pass
