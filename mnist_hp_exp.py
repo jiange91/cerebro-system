@@ -17,7 +17,7 @@ from tensorflow.keras import layers
 from pyspark.sql import SparkSession
 import numpy as np
 from pyspark.ml.feature import OneHotEncoderEstimator
-
+from pyspark import SparkConf
 from keras_tuner import HyperParameters
 import autokeras as ak
 from cerebro.nas.hphpmodel import HyperHyperModel
@@ -28,10 +28,10 @@ import os
 os.environ["PYSPARK_PYTHON"] = '/usr/bin/python3.6'
 os.environ["PYSPARK_DRIVER_PYTHON"] = '/usr/bin/python3.6'
 
-spark = SparkSession \
-    .builder \
-    .appName("Cerebro Example") \
-    .getOrCreate()
+conf = SparkConf().setAppName('training') \
+    .setMaster('spark://training-cluster:7077') \
+    .set('spark.task.cpus', '2')
+spark = SparkSession.builder.config(conf=conf).getOrCreate()
 
 ...
 work_dir = '/mnist_hp_exp/'
@@ -115,7 +115,6 @@ tuner._prepare_model_IO(hp, dataset=dataset)
 tuner.hypermodel.build(hp)
 tuner.oracle.update_space(hp)
 hp = tuner.oracle.get_space()
-print(hp.space)
 
 rel = tuner.fixed_arch_search(
     hp=hp,
@@ -124,6 +123,3 @@ rel = tuner.fixed_arch_search(
     x=dataset
 )
 
-
-with open("mnist_hp_logs.txt", "w") as file:
-    file.writelines(rel)
