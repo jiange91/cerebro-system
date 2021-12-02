@@ -16,7 +16,6 @@ from tensorflow import keras
 from tensorflow.keras import layers
 from pyspark.sql import SparkSession
 import numpy as np
-import json
 from pyspark.ml.feature import OneHotEncoderEstimator
 
 from keras_tuner import HyperParameters
@@ -41,7 +40,7 @@ store = LocalStore(prefix_path=work_dir + 'test/')
 
 df = spark.read.format("libsvm") \
     .option("numFeatures", "784") \
-    .load("mnist.scale") \
+    .load("data/mnist.scale") \
 
 
 
@@ -86,7 +85,7 @@ am.tuner_bind(
     tuner="randomsearch",
     hyperparameters=hp,
     objective="val_accuracy",
-    max_trials=20,
+    max_trials=2,
     overwrite=True,
 )
 
@@ -109,7 +108,7 @@ am._analyze_data(dataset)
 am.tuner.hyper_pipeline = None
 am.tuner.hypermodel.hyper_pipeline = None
 tuner = am.tuner
-tuner.hypermodel.hypermodel.set_fit_args(0.2, epochs=10)
+tuner.hypermodel.hypermodel.set_fit_args(0.2, epochs=2)
 
 hp = tuner.oracle.get_space()
 tuner._prepare_model_IO(hp, dataset=dataset)
@@ -121,10 +120,10 @@ print(hp.space)
 rel = tuner.fixed_arch_search(
     hp=hp,
     metadata=meta_data,
-    epoch=5,
+    epoch=2,
     x=dataset
 )
 
 
-with open("mnist_hp_logs.json", "w") as file:
-    json.dump(rel, file)
+with open("mnist_hp_logs.txt", "w") as file:
+    file.writelines(rel)

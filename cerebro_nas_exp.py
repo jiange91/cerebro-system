@@ -65,7 +65,13 @@ hp = HyperParameters()
 am.tuner_bind("randomsearch", hyperparameters=hp)
 
 model = am.fit(train_df, epochs=5)
+metrics = model.metrics
+
+for trial in metrics:
+    info = metrics[trial]
+    del info["trial"]
+    metrics[trial] = info
 
 
 with open("cerebro_nas_result/metrics.txt", "w") as file:
-    file.writelines(model.metrics)
+    file.writelines(metrics)

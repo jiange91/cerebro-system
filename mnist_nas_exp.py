@@ -16,7 +16,6 @@ from tensorflow.keras import layers
 from pyspark.sql import SparkSession
 import numpy as np
 import os
-import json
 
 os.environ["PYSPARK_PYTHON"] = '/usr/bin/python3.6'
 os.environ["PYSPARK_DRIVER_PYTHON"] = '/usr/bin/python3.6'
@@ -34,7 +33,7 @@ store = LocalStore(prefix_path=work_dir + 'test/')
 
 df = spark.read.format("libsvm") \
     .option("numFeatures", "784") \
-    .load("mnist.scale")
+    .load("data/mnist.scale")
 
 
 from pyspark.ml.feature import OneHotEncoderEstimator
@@ -73,12 +72,13 @@ am.tuner_bind(
     tuner="randomsearch",
     hyperparameters=None,
     objective="val_accuracy",
-    max_trials=3,
+    max_trials=2,
     overwrite=True,
 )
 
-rel = am.fit(train_df, epochs=5, input_shape=img_shape)
+rel = am.fit(train_df, epochs=2, input_shape=img_shape)
 
-with open("mnist_nas_logs.json", "w") as file:
-    json.dump(rel.metrics, file)
+
+with open("mnist_nas_logs.txt", "w") as file:
+    file.writelines(rel.metrics)
 
