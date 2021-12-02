@@ -9,25 +9,18 @@ from cerebro.tune import GridSearch, RandomSearch, TPESearch
 
 # Utility functions for specifying the search space.
 from cerebro.tune import hp_choice, hp_uniform, hp_quniform, hp_loguniform, hp_qloguniform
-from cerebro.tune.base import ModelSelection, update_model_results
 
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 from pyspark.sql import SparkSession
 import numpy as np
-import json
-from pyspark.ml.feature import OneHotEncoderEstimator
-
-from keras_tuner import HyperParameters
-import autokeras as ak
-from cerebro.nas.hphpmodel import HyperHyperModel
-from keras_tuner.engine import hyperparameters
 import os
-
+import json
 
 os.environ["PYSPARK_PYTHON"] = '/usr/bin/python3.6'
 os.environ["PYSPARK_DRIVER_PYTHON"] = '/usr/bin/python3.6'
+
 
 spark = SparkSession \
     .builder \
@@ -35,15 +28,16 @@ spark = SparkSession \
     .getOrCreate()
 
 ...
-work_dir = '/mnist_hp_exp/'
-backend = SparkBackend(spark_context=spark.sparkContext, num_workers=2)
+work_dir = '/mnist_nas_exp/'
+backend = SparkBackend(spark_context=spark.sparkContext, num_workers=1)
 store = LocalStore(prefix_path=work_dir + 'test/')
 
 df = spark.read.format("libsvm") \
     .option("numFeatures", "784") \
-    .load("mnist.scale") \
+    .load("mnist.scale")
 
 
+from pyspark.ml.feature import OneHotEncoderEstimator
 
 encoder = OneHotEncoderEstimator(dropLast=False)
 encoder.setInputCols(["label"])
@@ -54,16 +48,16 @@ encoded = encoder_model.transform(df)
 
 feature_columns = ['features']
 label_columns = ['label_OHE']
+train_df, test_df = encoded.randomSplit([0.8, 0.2], seed=100)
 
-train_df, test_df = encoded.randomSplit([0.8, 0.2], 100)
+from keras_tuner.engine import hyperparameters
+import autokeras as ak
+from cerebro.nas.hphpmodel import HyperHyperModel
 
 img_shape = (28, 28, 1)
-num_classes = 10
-
 
 input_node = ak.ImageInput()
-output_node = ak.ConvBlock(
-)(input_node)
+output_node = ak.ConvBlock()(input_node)
 output_node = ak.ClassificationHead()(output_node)
 am = HyperHyperModel(input_node, output_node, seed=2000)
 
@@ -75,22 +69,16 @@ am.resource_bind(
     evaluation_metric='accuracy',
 )
 
-hp = HyperParameters()
 am.tuner_bind(
     tuner="randomsearch",
-    hyperparameters=hp,
+    hyperparameters=None,
     objective="val_accuracy",
-    max_trials=20,
+    max_trials=3,
     overwrite=True,
 )
 
-_, _, meta_data, _ = am.sys_setup(train_df)
-
-hp = HyperParameters()
-am.tuner_bind("randomsearch", hyperparameters=hp)
-
-model = am.fit(train_df, epochs=5)
-metrics = model.metrics
+rel = am.fit(train_df, epochs=5, input_shape=img_shape)
 
 with open("mnist_nas_logs.json", "w") as file:
-    json.dump(metrics, file)
+    json.dump(rel.metrics, file)
+
