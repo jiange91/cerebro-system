@@ -18,13 +18,13 @@ from __future__ import absolute_import
 
 import datetime
 import numpy as np
-import pyarrow as pa
 from pyspark.sql import SparkSession
 import pyspark.sql.functions as f
 from pyspark.ml.linalg import DenseVector, SparseVector, Vector, VectorUDT
 from pyspark.sql.types import ArrayType, BinaryType, BooleanType, FloatType, DoubleType, \
     IntegerType, LongType, NullType, StringType
 from pyspark.sql.types import from_arrow_type
+import pyarrow as pa
 
 from petastorm.unischema import Unischema, UnischemaField, dict_to_spark_row
 from petastorm.codecs import ScalarCodec, NdarrayCodec
