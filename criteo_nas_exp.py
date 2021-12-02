@@ -64,6 +64,8 @@ am.resource_bind(backend=backend, store=store, label_columns=["labels"], feature
 hp = HyperParameters()
 am.tuner_bind("randomsearch", hyperparameters=hp)
 
+print(train_df.count())
+
 model = am.fit(train_df, epochs=5)
 metrics = model.metrics
 
