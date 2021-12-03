@@ -119,6 +119,7 @@ elif [ "$duty" = "s" ]; then
 fi
 echo "Bootstraping complete"
 
-
-
 sudo nohup socat TCP-LISTEN:8083,fork TCP:${LOCAL_IP}:8082 > /dev/null 2>&1 &
+
+cd ~/cerebro-system
+sudo zip -r cerebro.zip cerebro/
