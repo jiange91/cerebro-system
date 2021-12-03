@@ -4,6 +4,7 @@ from typing import Any
 from typing import Dict
 from typing import List
 from typing import Optional
+from keras_tuner.engine import trial as trial_lib, tuner
 
 import keras_tuner
 import numpy as np
@@ -58,3 +59,18 @@ class CerebroOracle(keras_tuner.Oracle):
     
     def create_trials(self, n):
         raise NotImplementedError
+
+    def end_trial(self, trial_id, status="COMPLETED"):
+        trial = None
+        for i, t in enumerate(self._running_trials):
+            if t.trial_id == trial_id:
+                trial = self._running_trials.pop(i)
+                break
+        if not trial:
+            raise ValueError("Ongoing trial with id: {} not found.".format(trial_id))
+        trial.status = status
+        if status == trial_lib.TrialStatus.COMPLETED:
+            self.score_trial(trial)
+        self.end_order.append(trial_id)
+        self._save_trial(trial)
+        self.save()

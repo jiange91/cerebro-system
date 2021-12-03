@@ -17,6 +17,7 @@ class RandomSearchOracle(CerebroOracle):
         tune_new_entries=True, 
         seed=None):
 
+        self._running_trials = []
         super().__init__(objective, max_trials=max_trials, hyperparameters=hyperparameters, allow_new_entries=allow_new_entries, tune_new_entries=tune_new_entries, seed=seed)
 
     def populate_space(self, trial_id):
@@ -43,16 +44,14 @@ class RandomSearchOracle(CerebroOracle):
                 status=status
             )
             if status == trial_lib.TrialStatus.RUNNING:
-                self.ongoing_trials[tuner_id] = trial
+                # self.ongoing_trials[tuner_id] = trial
+                self._running_trials.append(trial)
                 self.trials[trial_id] = trial
                 self.start_order.append(trial_id)
                 self._save_trial(trial)
                 self.save()
             trials.append(trial)
         return trials
-    
-    def update_trial(self, trial_id, metrics, step):
-        super().update_trial(trial_id, metrics=metrics, step=step)
     
     def _init_search_space(self):
         pass
@@ -139,14 +138,18 @@ class RandomSearch(SparkTuner):
         estimators = self.trials2estimators(trials, fit_kwargs["x"])
         ms = self.model_selection
         est_results = {model.getRunId():{'trial':trial} for trial, model in zip(trials, estimators)}
+        est_results_log = {model.getRunId():{} for trial, model in zip(trials, estimators)}
 
         for epoch in range(epochs):
             train_epoch = ms.backend.train_for_one_epoch(estimators, ms.store, dataset_idx, ms.feature_cols, ms.label_cols)
             update_model_results(est_results, train_epoch)
+            update_model_results(est_results_log, train_epoch)
 
             val_epoch = ms.backend.train_for_one_epoch(estimators, ms.store, dataset_idx, ms.feature_cols, ms.label_cols, is_train=False)
             update_model_results(est_results, val_epoch)
+            update_model_results(est_results_log, val_epoch)
             self.on_epoch_end(estimators=estimators, est_resutls=est_results, epoch=epoch)
+            ms._log_epoch_metrics_to_tensorboard(estimators, est_results_log)
         
         for est in estimators:
             self.estimators.append(est)

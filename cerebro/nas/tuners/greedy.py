@@ -1,5 +1,7 @@
 from random import Random
+from hyperopt.base import trials_from_docs
 import keras_tuner
+from numpy.lib.twodim_base import tri
 from tensorflow._api.v2 import data
 from .base import CerebroOracle
 from ..sparktuner import SparkTuner
@@ -80,6 +82,7 @@ class GreedyOracle(CerebroOracle):
         self.exploration = exploration
         self.initial_hps = initial_hps or []
         self._tried_initial_hps = [False] * len(self.initial_hps)
+        self._running_trials = []
         super().__init__(objective, max_trials=max_trials, hyperparameters=hyperparameters, allow_new_entries=allow_new_entries, tune_new_entries=tune_new_entries, seed=seed)
     
     def get_state(self):
@@ -216,7 +219,8 @@ class GreedyOracle(CerebroOracle):
                 status=status
             )
             if status == trial_lib.TrialStatus.RUNNING:
-                self.ongoing_trials[tuner_id] = trial
+                # self.ongoing_trials[tuner_id] = trial
+                self._running_trials.append(trial)
                 self.trials[trial_id] = trial
                 self.start_order.append(trial_id)
                 self._save_trial(trial)
@@ -321,14 +325,18 @@ class GreedySearch(SparkTuner):
         estimators = self.trials2estimators(trials, fit_kwargs["x"])
         ms = self.model_selection
         est_results = {model.getRunId():{'trial':trial} for trial, model in zip(trials, estimators)}
+        est_results_log = {model.getRunId():{} for trial, model in zip(trials, estimators)}
 
         for epoch in range(epochs):
             train_epoch = ms.backend.train_for_one_epoch(estimators, ms.store, dataset_idx, ms.feature_cols, ms.label_cols)
             update_model_results(est_results, train_epoch)
+            update_model_results(est_results_log, train_epoch)
 
             val_epoch = ms.backend.train_for_one_epoch(estimators, ms.store, dataset_idx, ms.feature_cols, ms.label_cols, is_train=False)
             update_model_results(est_results, val_epoch)
+            update_model_results(est_results_log, val_epoch)
             self.on_epoch_end(estimators=estimators, est_resutls=est_results, epoch=epoch)
+            ms._log_epoch_metrics_to_tensorboard(estimators, est_results_log)
         
         for est in estimators:
             self.estimators.append(est)
