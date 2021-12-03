@@ -77,7 +77,6 @@ Then create a HyperParameters object and you could fix hyperparameters on your o
 hyperparameters set, bind it to the hypermodel.
 
 ```python
-from tensorflow.keras.datasets import mnist
 from keras_tuner import HyperParameters
 
 hp = HyperParameters()
