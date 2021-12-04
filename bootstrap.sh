@@ -143,14 +143,18 @@ while [[ $# -gt 0 ]]; do
           mode="$2"
           case $mode in
                   master)
-                          echo "master"
+                          echo "master mode"
                           sudo chmod +x nfs_server.sh
                           sudo ./nfs_server.sh
+                          sudo chmod +x spark_start_master.sh
+                          sudo ./spark_start_master.sh
                           ;;
                   slave)
                           echo "slave"
                           sudo chmod +x nfs_slave.sh
                           sudo ./nfs_slave.sh
+                          sudo chmod +x spark_start_slave.sh
+                          sudo ./spark_start_slave.sh
                           ;;
           esac
           shift
