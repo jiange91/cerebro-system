@@ -117,7 +117,7 @@ if [ "$duty" = "m" ]; then
 	# sudo nohup jupyter notebook --no-browser --allow-root --ip 0.0.0.0 --notebook-dir=/ > /dev/null 2>&1 &
   # set up nfs
   sudo apt-get update
-  sudo apt-get install nfs-kernel-server
+  sudo apt-get install -y nfs-kernel-server
   sudo mkdir -p /var/nfs
   sudo chown nobody:nogroup /var/nfs
   sudo echo "/var/nfs $master_ip(rw,sync,no_root_squash,no_subtree_check)" | sudo tee -a /etc/exports
@@ -131,7 +131,7 @@ elif [ "$duty" = "s" ]; then
  #  $HADOOP_PREFIX/sbin/hadoop-daemons.sh --script hdfs start datanode
  #  $HADOOP_PREFIX/sbin/yarn-daemons.sh start nodemanager
  sudo apt-get update
- sudo sudo apt-get install nfs-common
+ sudo sudo apt-get install -y nfs-common
  sudo mkdir -p /var/nfs
  sudo mount $master_ip:/var/nfs /var/nfs
 fi
