@@ -26,13 +26,10 @@ sudo apt-get -y install docker-ce docker-ce-cli containerd.io
 wget https://archive.apache.org/dist/spark/spark-2.4.5/spark-2.4.5-bin-hadoop2.7.tgz;
 tar xvf spark-2.4.5-bin-hadoop2.7.tgz;
 sudo mv spark-2.4.5-bin-hadoop2.7 /usr/local/spark;
-SPARK_HOME=/usr/local/spark
-echo "export SPARK_HOME=$SPARK_HOME" >> ~/.bashrc;
-echo "export PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin" >> ~/.bashrc;
+echo export PATH="$PATH:/usr/local/spark/bin" > ~/.bashrc;
+echo export SPARK_HOME="/usr/local/spark" >> ~/.bashrc;
 sudo cp /usr/local/spark/conf/spark-env.sh.template /usr/local/spark/conf/spark-env.sh;
 sudo cp /usr/local/spark/conf/slaves.template /usr/local/spark/conf/slaves;
-
-source ~/.bashrc
 
 pip3 install --upgrade pip
 pip3 install -r requirements.txt --ignore-installed
@@ -108,27 +105,32 @@ cp ~/._bashrc /etc/profile.d/spark.sh
 source ~/.bashrc
 # Running Spark deamons
 if [ "$duty" = "m" ]; then
-	sudo bash /usr/local/spark/sbin/start-master.sh
+  sudo bash /usr/local/spark/sbin/start-master.sh
   $HADOOP_PREFIX/bin/hdfs namenode -format "spark_cluster"
   $HADOOP_PREFIX/sbin/hadoop-daemon.sh --script hdfs start namenode
   # $HADOOP_PREFIX/sbin/yarn-daemon.sh start resourcemanager
   # $HADOOP_PREFIX/sbin/yarn-daemons.sh start nodemanager
-	sudo nohup socat TCP-LISTEN:8081,fork TCP:${LOCAL_IP}:8080 > /dev/null 2>&1 &
-	sudo nohup socat TCP-LISTEN:4041,fork TCP:${LOCAL_IP}:4040 > /dev/null 2>&1 &
+  sudo nohup socat TCP-LISTEN:8081,fork TCP:${LOCAL_IP}:8080 > /dev/null 2>&1 &
+  sudo nohup socat TCP-LISTEN:4041,fork TCP:${LOCAL_IP}:4040 > /dev/null 2>&1 &
   sudo nohup socat TCP-LISTEN:8089,fork TCP:${LOCAL_IP}:8088 > /dev/null 2>&1 &
-	sudo nohup docker run --init -p 3000:3000 -v "/:/home/project:cached" theiaide/theia-python:next > /dev/null 2>&1 &
-	sudo nohup jupyter notebook --no-browser --allow-root --ip 0.0.0.0 --notebook-dir=/ > /dev/null 2>&1 &
+  sudo nohup docker run --init -p 3000:3000 -v "/:/home/project:cached" theiaide/theia-python:next > /dev/null 2>&1 &
+  sudo nohup jupyter notebook --no-browser --allow-root --ip 0.0.0.0 --notebook-dir=/ > /dev/null 2>&1 &
 
 
 elif [ "$duty" = "s" ]; then
-	sudo bash /usr/local/spark/sbin/start-slave.sh $master_ip:7077
-	sudo nohup socat TCP-LISTEN:8082,fork TCP:${LOCAL_IP}:8081 > /dev/null 2>&1 &
+  sudo bash /usr/local/spark/sbin/start-slave.sh $master_ip:7077
+  sudo nohup socat TCP-LISTEN:8082,fork TCP:${LOCAL_IP}:8081 > /dev/null 2>&1 &
   $HADOOP_PREFIX/sbin/hadoop-daemons.sh --script hdfs start datanode
   $HADOOP_PREFIX/sbin/yarn-daemons.sh start nodemanager
 fi
 
 # Tmux
 sudo apt-get install tmux
+
+
+echo "Bootstraping complete"
+
+
 sudo nohup socat TCP-LISTEN:8083,fork TCP:${LOCAL_IP}:8082 > /dev/null 2>&1 &
 
 cd ~/cerebro-system
