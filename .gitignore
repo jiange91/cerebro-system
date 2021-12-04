@@ -142,3 +142,5 @@ cython_debug/
 *experiments/
 test/*
 **/*.ipynb_checkpoints/
+cerebro.zip
+spark-2.4.5-bin-hadoop2.7.tgz
