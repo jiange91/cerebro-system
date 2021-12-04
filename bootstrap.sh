@@ -146,13 +146,13 @@ while [[ $# -gt 0 ]]; do
                           echo "master mode"
                           sudo chmod +x nfs_master.sh
                           sudo ./nfs_server.sh
-                          sudo bash SPARK_HOME/sbin/start-slave.sh spark://$master_ip:7077
+                          sudo bash $SPARK_HOME/sbin/start-master.sh
                           ;;
                   slave)
                           echo "slave"
                           sudo chmod +x nfs_slave.sh
                           sudo ./nfs_slave.sh
-                          sudo bash SPARK_HOME/sbin/start-slave.sh $master_ip:7077 
+                          sudo bash $SPARK_HOME/sbin/start-slave.sh $master_ip:7077 
                           ;;
           esac
           shift
