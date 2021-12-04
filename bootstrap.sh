@@ -125,11 +125,11 @@ elif [ "$duty" = "s" ]; then
   $HADOOP_PREFIX/sbin/yarn-daemons.sh start nodemanager
 fi
 
-if ["$mode" = "m"]; then
+if [ "$mode" = "m" ]; then
   sudo bash /usr/local/spark/sbin/start-master.sh
   sudo chmod 777 nfs_master.sh
   sudo bash nfs_master.sh
-elif ["$mode" = "s"]; then
+elif [ "$mode" = "s" ]; then
   sudo bash /usr/local/spark/sbin/start-slave.sh $master_ip:7077
   sudo chmod 777 nfs_slave.sh
   sudo bash nfs_slave.sh
