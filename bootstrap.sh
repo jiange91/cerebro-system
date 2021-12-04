@@ -145,7 +145,7 @@ while [[ $# -gt 0 ]]; do
                   master)
                           echo "master mode"
                           sudo chmod +x nfs_master.sh
-                          sudo ./nfs_server.sh
+                          sudo ./nfs_master.sh
                           sudo bash $SPARK_HOME/sbin/start-master.sh
                           ;;
                   slave)
