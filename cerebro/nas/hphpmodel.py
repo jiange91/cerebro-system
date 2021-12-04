@@ -286,6 +286,79 @@ class HyperHyperModel(object):
             metadata=metadata,
             **kwargs
         )
+    
+    def fit_on_prepared_data(
+        self,
+        df,
+        batch_size=32,
+        epochs=None,
+        callbacks=None,
+        verbose=1,
+        input_shape = None,
+        **kwargs
+    ):
+
+        """
+        Setup cluster before calling the tuner
+        """
+        ms = self.model_selection
+        backend = ms.backend
+
+        if ms.verbose >= 1: print(
+            'CEREBRO => Time: {}, Initializing Workers'.format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+        # initialize backend and data loaders
+        backend.initialize_workers()
+
+        if ms.verbose >= 1: print(
+            'CEREBRO => Time: {}, Initializing Data Loaders'.format(
+                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+        backend.initialize_data_loaders(ms.store, None, ms.feature_cols + ms.label_cols)
+
+        if input_shape and type(input_shape) is int or type(input_shape) is tuple:
+            x = np.array(df.select(ms.feature_cols).head(10))
+            y = np.array(df.select(ms.label_cols).head(10))
+            x = [x[:,i] for i in range(x.shape[1])]
+            x = [r.reshape((-1, *input_shape)) for r in x]
+            y = np.squeeze(y,1)
+        else:
+            x = np.array(df.select(ms.feature_cols).head(10))
+            y = np.array(df.select(ms.label_cols).head(10))
+            x = [x[:,i,...,np.newaxis] for i in range(x.shape[1])]
+            y = np.squeeze(y,1)
+        if len(y.shape) > 2:
+            raise ValueError(
+                "We do not support multiple labels. Expect the target data for {name} to have shape "
+                "(batch_size, num_classes), "
+                "but got {shape}.".format(name=self.name, shape=self.shape)
+            )
+        dataset, validation_data = self._convert_to_dataset(
+            x=x, y=y, validation_data=None, batch_size=batch_size
+        )
+
+        """
+        Analyze data analyse input and output data and config model inputs and heads
+        """
+        self._analyze_data(dataset)
+
+        """
+        Build preprocessing pipeline with tunable parameters
+
+        Since the model is trained from workers which reads data from pre-distributed permanent storage, we will not consider tuning preprocessing currently.
+        """
+        # self._build_hyper_pipeline(dataset)
+        self.tuner.hyper_pipeline = None
+        self.tuner.hypermodel.hyper_pipeline = None
+        return self.tuner.search(
+            x=dataset,
+            epochs=epochs,
+            callbacks=callbacks,
+            validation_data=validation_data,
+            validation_split=ms.validation,
+            verbose=verbose,
+            dataset_idx=None,
+            metadata=metadata,
+            **kwargs
+        )
 
         # return history
 
