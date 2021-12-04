@@ -1,5 +1,5 @@
 sudo apt-get update
-sudo apt-get install nfs-kernel-server
+sudo apt-get install -y nfs-kernel-server
 sudo mkdir /var/nfs
 sudo chown nobody:nogroup /var/nfs
 sudo echo "/var/nfs $master_ip (rw,sync,no_subtree_check,no_root_squash)" | sudo tee -a /etc/exports
