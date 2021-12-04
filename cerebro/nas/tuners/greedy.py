@@ -132,7 +132,7 @@ class GreedyOracle(CerebroOracle):
         if not all(self._tried_initial_hps):
             values = self._next_initial_hps()
             return {
-                "status": keras_tuner.engine.trial.TrialStatus.RUNNING,
+                "status": trial_lib.TrialStatus.RUNNING,
                 "values": values,
             }
 
@@ -147,12 +147,12 @@ class GreedyOracle(CerebroOracle):
                     continue
                 # Values found.
                 return {
-                    "status": keras_tuner.engine.trial.TrialStatus.RUNNING,
+                    "status": trial_lib.TrialStatus.RUNNING,
                     "values": values,
                 }
             # All stages reached max collisions.
             return {
-                "status": keras_tuner.engine.trial.TrialStatus.STOPPED,
+                "status": trial_lib.TrialStatus.STOPPED,
                 "values": None,
             }
         else:
@@ -307,6 +307,7 @@ class GreedySearch(SparkTuner):
             for trial in trials:
                 if trial.status != trial_lib.TrialStatus.STOPPED:
                     running_trials.append(trial)
+            print(len(running_trials))
             if len(running_trials) == 0:
                 break
             self.begin_trials(trials)

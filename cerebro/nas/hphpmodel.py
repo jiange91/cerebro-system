@@ -240,15 +240,16 @@ class HyperHyperModel(object):
             'CEREBRO => Time: {}, Initializing Data Loaders'.format(
                 datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
         backend.initialize_data_loaders(ms.store, None, ms.feature_cols + ms.label_cols)
+
         if input_shape and type(input_shape) is int or type(input_shape) is tuple:
-            x = np.array(df.select(ms.feature_cols).head(100))
-            y = np.array(df.select(ms.label_cols).head(100))
+            x = np.array(df.select(ms.feature_cols).head(10))
+            y = np.array(df.select(ms.label_cols).head(10))
             x = [x[:,i] for i in range(x.shape[1])]
             x = [r.reshape((-1, *input_shape)) for r in x]
             y = np.squeeze(y,1)
         else:
-            x = np.array(df.select(ms.feature_cols).head(100))
-            y = np.array(df.select(ms.label_cols).head(100))
+            x = np.array(df.select(ms.feature_cols).head(10))
+            y = np.array(df.select(ms.label_cols).head(10))
             x = [x[:,i,...,np.newaxis] for i in range(x.shape[1])]
             y = np.squeeze(y,1)
         if len(y.shape) > 2:
