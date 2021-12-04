@@ -133,6 +133,7 @@ elif ["$mode" = "s"]; then
   sudo bash /usr/local/spark/sbin/start-slave.sh $master_ip:7077
   sudo chmod 777 nfs_slave.sh
   sudo bash nfs_slave.sh
+fi
 # Tmux
 sudo apt-get install tmux
 
