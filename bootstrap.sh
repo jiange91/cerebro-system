@@ -99,8 +99,8 @@ source ~/.bashrc
 # Jupyter password
 mkdir -p ~/.jupyter;
 HASHED_PASSWORD=$(python3.6 -c "from notebook.auth import passwd; print(passwd('$JUPYTER_PASSWORD'))");
-echo "c.NotebookApp.password = u'$HASHED_PASSWORD'" >~/.jupyter/jupyter_notebook_config.py;
-echo "c.NotebookApp.open_browser = False" >>~/.jupyter/jupyter_notebook_config.py;
+echo "c.NotebookApp.password = u'$HASHED_PASSWORD'" >~/.jupyter/jupyter_notebook_config.json;
+echo "c.NotebookApp.open_browser = False" >>~/.jupyter/jupyter_notebook_config.json;
 
 
 cp ~/._bashrc /local/.bashrc
