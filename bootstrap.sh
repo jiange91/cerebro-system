@@ -32,6 +32,8 @@ echo "export PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin" >> ~/.bashrc;
 sudo cp /usr/local/spark/conf/spark-env.sh.template /usr/local/spark/conf/spark-env.sh;
 sudo cp /usr/local/spark/conf/slaves.template /usr/local/spark/conf/slaves;
 
+source ~/.bashrc
+
 pip3 install --upgrade pip
 pip3 install -r requirements.txt --ignore-installed
 
