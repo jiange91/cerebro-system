@@ -132,5 +132,31 @@ sudo nohup socat TCP-LISTEN:8083,fork TCP:${LOCAL_IP}:8082 > /dev/null 2>&1 &
 cd ~/cerebro-system
 sudo zip -r cerebro.zip cerebro/
 
+POSITIONAL=()
+while [[ $# -gt 0 ]]; do
+  key="$1"
+
+  case $key in
+    -m|--mode)
+      mode="$2"
+      case $mode in
+              master)
+                      echo "master"
+                      sudo chmod +x nfs_server.sh
+                      sudo ./nfs_server.sh
+                      ;;
+              slave)
+                      echo "slave"
+                      sudo chmod +x nfs_slave.sh
+                      sudo ./nfs_slave.sh
+                      ;;
+      esac
+      shift
+      ;;
+    *)    # unknown option
+      POSITIONAL+=("$1") # save it in an array for later
+      shift # past argument
+      ;;
+
 echo "Bootstraping complete"
 
