@@ -10,6 +10,7 @@ from ...tune.base import ModelSelection, update_model_results, ModelSelectionRes
 from typing import Optional, List, Any, Dict, Union
 import numpy as np
 from enum import Enum
+import json
 
 class Mode(Enum):
     EXPLOIT = 0
@@ -307,9 +308,10 @@ class GreedySearch(SparkTuner):
             for trial in trials:
                 if trial.status != trial_lib.TrialStatus.STOPPED:
                     running_trials.append(trial)
-            print(len(running_trials))
+#             print("Starting {i} trials".format(i=len(running_trials)))
             if len(running_trials) == 0:
                 break
+            trials = running_trials
             self.begin_trials(trials)
             self.run_trials(trials, epochs, dataset_idx, metadata, **fit_kwargs)
             self.end_trials(trials)
@@ -338,7 +340,9 @@ class GreedySearch(SparkTuner):
             update_model_results(est_results_log, val_epoch)
             self.on_epoch_end(estimators=estimators, est_resutls=est_results, epoch=epoch)
             ms._log_epoch_metrics_to_tensorboard(estimators, est_results_log)
-        
+            with open("/var/nfs/tmp_rel.txt", "w") as file:
+                file.write(json.dumps(est_results_log))
+            
         for est in estimators:
             self.estimators.append(est)
             self.estimator_results[est.getRunId()] = est_results[est.getRunId()]
@@ -359,3 +363,4 @@ class GreedySearch(SparkTuner):
             trial.status = status
             if trial.status == "STOPPED":
                 est.getModel().stop_training = True
+            

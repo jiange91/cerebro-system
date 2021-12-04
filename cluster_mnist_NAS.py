@@ -24,7 +24,7 @@ from pyspark import SparkConf
 
 conf = SparkConf().setAppName('cluster') \
     .setMaster('spark://10.10.1.1:7077') \
-    .set('spark.task.cpus', '32')
+    .set('spark.task.cpus', '16')
 spark = SparkSession.builder.config(conf=conf).getOrCreate()
 spark.sparkContext.addPyFile("cerebro.zip")
 
@@ -35,7 +35,7 @@ spark.sparkContext.addPyFile("cerebro.zip")
 
 # ...
 work_dir = '/var/nfs/'
-backend = SparkBackend(spark_context=spark.sparkContext, num_workers=2)
+backend = SparkBackend(spark_context=spark.sparkContext, num_workers=4)
 store = LocalStore(prefix_path=work_dir + 'test/')
 
 # df = spark.read.format("libsvm") \
@@ -84,13 +84,13 @@ am.resource_bind(
 )
 
 am.tuner_bind(
-#     tuner="greedy", 
-    tuner="randomsearch",
+    tuner="greedy", 
+#     tuner="randomsearch",
     hyperparameters=None, 
     objective="val_accuracy",
     max_trials=2,
     overwrite=True,
-#     exploration=0.3,
+    exploration=0.3,
 )
 
 rel = am.fit(train_df, epochs=2, input_shape=img_shape)
