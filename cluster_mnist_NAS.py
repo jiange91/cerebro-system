@@ -24,7 +24,7 @@ from pyspark import SparkConf
 
 conf = SparkConf().setAppName('cluster') \
     .setMaster('spark://10.10.1.1:7077') \
-    .set('spark.task.cpus', '2')
+    .set('spark.task.cpus', '32')
 spark = SparkSession.builder.config(conf=conf).getOrCreate()
 spark.sparkContext.addPyFile("cerebro.zip")
 
@@ -35,7 +35,7 @@ spark.sparkContext.addPyFile("cerebro.zip")
 
 # ...
 work_dir = '/var/nfs/'
-backend = SparkBackend(spark_context=spark.sparkContext, num_workers=2)
+backend = SparkBackend(spark_context=spark.sparkContext, num_workers=4)
 store = LocalStore(prefix_path=work_dir + 'test/')
 
 # df = spark.read.format("libsvm") \
@@ -45,7 +45,7 @@ store = LocalStore(prefix_path=work_dir + 'test/')
 
 df = spark.read.format("libsvm") \
     .option("numFeatures", "784") \
-    .load("/var/nfs/mnist.scale")
+    .load(work_dir + "data/mnist.scale")
 
 from pyspark.ml.feature import OneHotEncoderEstimator
 
@@ -87,12 +87,19 @@ am.tuner_bind(
     tuner="greedy", 
     hyperparameters=None, 
     objective="val_accuracy",
-    max_trials=1,
+    max_trials=6,
     overwrite=True,
     exploration=0.3,
 )
 
-rel = am.fit(train_df, epochs=1, input_shape=img_shape)
+rel = am.fit(train_df, epochs=2, input_shape=img_shape)
 
+import json
+m = {}
+for model in rel.metrics:
+    m[model] = {}
+    for key in rel.metrics[model]:
+        if key != 'trial':
+            m[model][key] = rel.metrics[model][key]
 with open("mnist_nas_logs.txt", "w") as file:
-    file.writelines(rel.metrics)
+    file.write(json.dumps(m))
