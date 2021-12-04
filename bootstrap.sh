@@ -106,7 +106,7 @@ source ~/.bashrc
 # Running Spark deamons
 if [ "$duty" = "m" ]; then
 	sudo bash /usr/local/spark/sbin/start-master.sh
-  $HADOOP_PREFIX/bin/hdfs namenode -format "spark_cluster"
+  # $HADOOP_PREFIX/bin/hdfs namenode -format "spark_cluster"
  #  $HADOOP_PREFIX/sbin/hadoop-daemon.sh --script hdfs start namenode
  #  # $HADOOP_PREFIX/sbin/yarn-daemon.sh start resourcemanager
  #  # $HADOOP_PREFIX/sbin/yarn-daemons.sh start nodemanager
