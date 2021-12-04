@@ -126,7 +126,7 @@ elif [ "$duty" = "s" ]; then
 fi
 
 if ["$mode" = "m"]; then
-  sudo bash /usr/local/spark/sbin/start-slave.sh $master_ip:7077
+  sudo bash /usr/local/spark/sbin/start-master.sh
   sudo chmod 777 nfs_master.sh
   sudo bash nfs_master.sh
 elif ["$mode" = "s"]; then
