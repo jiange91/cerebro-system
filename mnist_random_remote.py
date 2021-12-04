@@ -28,7 +28,7 @@ import os
 os.environ["PYSPARK_PYTHON"] = '/usr/bin/python3.6'
 os.environ["PYSPARK_DRIVER_PYTHON"] = '/usr/bin/python3.6'
 
-conf = SparkConf().setAppName('training') \
+conf = SparkConf().setAppName('mnist_random_remote') \
     .setMaster('spark://10.10.1.1:7077') \
     .set('spark.task.cpus', '40')
 spark = SparkSession.builder.config(conf=conf).getOrCreate()
@@ -40,7 +40,7 @@ store = LocalStore(prefix_path=work_dir + 'test/')
 
 df = spark.read.format("libsvm") \
     .option("numFeatures", "784") \
-    .load("data/mnist.scale") \
+    .load(work_dir+"data/mnist.scale") \
 
 
 encoder = OneHotEncoderEstimator(dropLast=False)

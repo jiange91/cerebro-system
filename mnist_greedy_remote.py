@@ -40,7 +40,7 @@ store = LocalStore(prefix_path=work_dir + 'test/')
 
 df = spark.read.format("libsvm") \
     .option("numFeatures", "784") \
-    .load("data/mnist.scale") \
+    .load(work_dir+"data/mnist.scale") \
 
 
 encoder = OneHotEncoderEstimator(dropLast=False)
