@@ -1,7 +1,7 @@
 #!/bin/bash
 mode=${1}
-duty=${2}
 JUPYTER_PASSWORD=${2:-"root"}
+duty=${3}
 set -e
 sudo apt-get update;
 sudo add-apt-repository -y ppa:openjdk-r/ppa
