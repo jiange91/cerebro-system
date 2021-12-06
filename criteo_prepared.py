@@ -29,72 +29,40 @@ conf = SparkConf().setAppName('cluster') \
 spark = SparkSession.builder.config(conf=conf).getOrCreate()
 spark.sparkContext.addPyFile("cerebro.zip")
 
-# spark = SparkSession \
-#     .builder \
-#     .appName("Cerebro Example") \
-#     .getOrCreate()
-
-# ...
 work_dir = '/var/nfs/'
 backend = SparkBackend(spark_context=spark.sparkContext, num_workers=6)
 store = LocalStore(prefix_path=work_dir + 'test/')
-
-# df = spark.read.format("libsvm") \
-#     .option("numFeatures", "784") \
-#     .load("data/mnist.scale") \
-
-
-df = spark.read.format("libsvm") \
-    .option("numFeatures", "784") \
-    .load(work_dir + "mnist/mnist.scale")
-
-from pyspark.ml.feature import OneHotEncoderEstimator
-
-encoder = OneHotEncoderEstimator(dropLast=False)
-encoder.setInputCols(["label"])
-encoder.setOutputCols(["label_OHE"])
-
-encoder_model = encoder.fit(df)
-encoded = encoder_model.transform(df)
-
-feature_columns=['features']
-label_columns=['label_OHE']
-train_df, test_df = encoded.randomSplit([0.8, 0.2], seed=100)
 
 from keras_tuner.engine import hyperparameters
 import autokeras as ak
 from cerebro.nas.hphpmodel import HyperHyperModel
 
-img_shape = (28, 28, 1)
+# Define the search space
+input_node = ak.StructuredDataInput()
+otuput_node = ak.DenseBlock()(input_node)
+output_node = ak.ClassificationHead(num_classes=2, multi_label=True)(otuput_node)
 
-input_node = ak.ImageInput()
-output_node = ak.ConvBlock(
-    kernel_size=hyperparameters.Fixed('kernel_size', value=3),
-    num_blocks=hyperparameters.Fixed('num_blocks', value=1),
-    num_layers=hyperparameters.Fixed('num_layers', value=2),
-)(input_node)
-output_node = ak.ClassificationHead()(output_node)
-am = HyperHyperModel(input_node, output_node, seed=2000)
+am = HyperHyperModel(input_node, output_node, seed=2500)
 
 am.resource_bind(
     backend=backend, 
     store=store,
-    feature_columns=feature_columns,
-    label_columns=label_columns,
+    feature_columns=["features"],
+    label_columns=['labels'],
     evaluation_metric='accuracy', 
 )
 
 am.tuner_bind(
     tuner="greedy", 
-#     tuner="randomsearch",
     hyperparameters=None, 
     objective="val_accuracy",
-    max_trials=2,
+    max_trials=20,
     overwrite=True,
     exploration=0.3,
 )
 
-rel = am.fit(train_df, epochs=2, input_shape=img_shape)
+prepare_df = spark.read.parquet(work_dir+"limit/criteo/train.parquet")
+rel = am.fit_on_prepared_data(prepare_df, batch_size=128, epochs=2)
 
 import json
 m = {}
@@ -103,5 +71,5 @@ for model in rel.metrics:
     for key in rel.metrics[model]:
         if key != 'trial':
             m[model][key] = rel.metrics[model][key]
-with open("mnist_nas_logs.txt", "w") as file:
+with open("criteo_nas_prepared.txt", "w") as file:
     file.write(json.dumps(m))
