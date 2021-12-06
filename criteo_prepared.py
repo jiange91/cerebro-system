@@ -39,7 +39,7 @@ from cerebro.nas.hphpmodel import HyperHyperModel
 
 # Define the search space
 input_node = ak.StructuredDataInput()
-otuput_node = ak.DenseBlock()(input_node)
+otuput_node = ak.DenseBlock(num_layers=1, num_units=16)(input_node)
 output_node = ak.ClassificationHead(num_classes=2, multi_label=True)(otuput_node)
 
 am = HyperHyperModel(input_node, output_node, seed=2500)
