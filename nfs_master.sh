@@ -1,3 +1,4 @@
+#!/bin/bash
 sudo apt-get update
 sudo apt-get install -y nfs-kernel-server
 sudo mkdir -p /var/nfs
