@@ -29,52 +29,27 @@ conf = SparkConf().setAppName('cluster') \
 spark = SparkSession.builder.config(conf=conf).getOrCreate()
 spark.sparkContext.addPyFile("cerebro.zip")
 
-# spark = SparkSession \
-#     .builder \
-#     .appName("Cerebro Example") \
-#     .getOrCreate()
-
-# ...
 work_dir = '/var/nfs/'
 backend = SparkBackend(spark_context=spark.sparkContext, num_workers=6)
 store = LocalStore(prefix_path=work_dir + 'test/')
 
-# df = spark.read.format("libsvm") \
-#     .option("numFeatures", "784") \
-#     .load("data/mnist.scale") \
-
-
-df = spark.read.format("libsvm") \
-    .option("numFeatures", "784") \
-    .load(work_dir + "mnist/mnist.scale")
-
-from pyspark.ml.feature import OneHotEncoderEstimator
-
-encoder = OneHotEncoderEstimator(dropLast=False)
-encoder.setInputCols(["label"])
-encoder.setOutputCols(["label_OHE"])
-
-encoder_model = encoder.fit(df)
-encoded = encoder_model.transform(df)
-
 feature_columns=['features']
-label_columns=['label_OHE']
-train_df, test_df = encoded.randomSplit([0.8, 0.2], seed=100)
+label_columns=['label']
+
+df = spark.read.load(work_dir + "IMDB/data.parquet")
+df.show(5)
+train_df, test_df = df.randomSplit([0.8, 0.2], seed=100)
 
 from keras_tuner.engine import hyperparameters
 import autokeras as ak
 from cerebro.nas.hphpmodel import HyperHyperModel
 
-img_shape = (28, 28, 1)
-
-input_node = ak.ImageInput()
-output_node = ak.ConvBlock(
-    kernel_size=hyperparameters.Fixed('kernel_size', value=3),
-    num_blocks=hyperparameters.Fixed('num_blocks', value=1),
-    num_layers=hyperparameters.Fixed('num_layers', value=2),
-)(input_node)
+input_node = ak.TextInput()
+output_node = ak.TextBlock(block_type="ngram")(input_node)
 output_node = ak.ClassificationHead()(output_node)
-am = HyperHyperModel(input_node, output_node, seed=2000)
+am = HyperHyperModel(
+    inputs=input_node, outputs=output_node, seed=2000
+)
 
 am.resource_bind(
     backend=backend, 
@@ -94,7 +69,7 @@ am.tuner_bind(
     exploration=0.3,
 )
 
-rel = am.fit(train_df, epochs=2, input_shape=img_shape)
+rel = am.fit(train_df, epochs=2)
 
 import json
 m = {}
@@ -103,5 +78,5 @@ for model in rel.metrics:
     for key in rel.metrics[model]:
         if key != 'trial':
             m[model][key] = rel.metrics[model][key]
-with open("mnist_nas_logs.txt", "w") as file:
+with open("IMDB_greedy_log.txt", "w") as file:
     file.write(json.dumps(m))

@@ -437,6 +437,11 @@ def _train_val_split(df, validation):
 
     return train_df, val_df, validation_ratio
 
+def create_array(x, k, dtype):
+    if dtype == np.uint8:
+        return np.fromstring(x[k], dtype=dtype)
+    else:
+        return np.array(x[k], dtype=dtype)
 
 def _create_dataset(store, df, feature_columns, label_columns,
                     validation, sample_weight_col, compress_sparse,
@@ -491,7 +496,7 @@ def _create_dataset(store, df, feature_columns, label_columns,
     with materialize_dataset(spark, train_data_path, petastorm_schema, parquet_row_group_size_mb,
                              filesystem_factory=train_resolver.filesystem_factory()):
         train_rdd = train_df.rdd.map(lambda x: x.asDict()).map(
-            lambda x: {k: np.array(x[k], dtype=spark_to_petastorm_type(metadata[k]['spark_data_type'])) for k in x}) \
+            lambda x: {k: create_array(x,k,spark_to_petastorm_type(metadata[k]['spark_data_type'])) for k in x}) \
             .map(lambda x: dict_to_spark_row(petastorm_schema, x))
 
         spark.createDataFrame(train_rdd, petastorm_schema.as_spark_schema()) \
@@ -513,7 +518,7 @@ def _create_dataset(store, df, feature_columns, label_columns,
         with materialize_dataset(spark, val_data_path, petastorm_schema, parquet_row_group_size_mb,
                                  filesystem_factory=val_resolver.filesystem_factory()):
             val_rdd = val_df.rdd.map(lambda x: x.asDict()).map(
-                lambda x: {k: np.array(x[k], dtype=spark_to_petastorm_type(metadata[k]['spark_data_type'])) for k in x}) \
+                lambda x: {k: create_array(x,k,spark_to_petastorm_type(metadata[k]['spark_data_type'])) for k in x}) \
                 .map(lambda x: dict_to_spark_row(petastorm_schema, x))
 
             spark.createDataFrame(val_rdd, petastorm_schema.as_spark_schema()) \
