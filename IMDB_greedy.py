@@ -46,7 +46,7 @@ from cerebro.nas.hphpmodel import HyperHyperModel
 
 input_node = ak.TextInput()
 output_node = ak.TextBlock(block_type="ngram")(input_node)
-output_node = ak.ClassificationHead()(output_node)
+output_node = ak.ClassificationHead(num_classes=2, multi_label=True)(output_node)
 am = HyperHyperModel(
     inputs=input_node, outputs=output_node, seed=2000
 )

@@ -106,7 +106,8 @@ def spark_to_petastorm_type(dtype):
     elif dtype == IntegerType:
         return np.int32
     elif dtype == StringType:
-        return np.uint8
+        # return np.uint8
+        return str
     elif dtype == FloatType:
         return np.float32
     elif dtype == BinaryType:
@@ -439,7 +440,10 @@ def _train_val_split(df, validation):
 
 def create_array(x, k, dtype):
     if dtype == np.uint8:
-        return np.fromstring(x[k], dtype=dtype)
+        return np.frombuffer(x[k].encode(), dtype=dtype)
+        # return x[k]
+    elif dtype == str:
+        return str(x[k])
     else:
         return np.array(x[k], dtype=dtype)
 
