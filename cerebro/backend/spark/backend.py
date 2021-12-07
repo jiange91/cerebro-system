@@ -478,9 +478,9 @@ def sub_epoch_trainer(estimator, metadata, keras_utils, run_id, dataset_idx, tra
 
             # restoring the model from the previous chckpoint
             with tf.keras.utils.custom_object_scope(custom_objects):
-                model = tf.keras.models.load_model(remote_store.checkpoint_path)
-                # model = deserialize_keras_model(
-                #     remote_store.get_last_checkpoint(), lambda x: tf.keras.models.load_model(x))
+                # model = tf.keras.models.load_model(remote_store.checkpoint_path)
+                model = deserialize_keras_model(
+                    remote_store.get_last_checkpoint(), lambda x: tf.keras.models.load_model(x))
 
             steps_per_epoch = int(math.ceil(train_rows / batch_size / num_workers))
 
