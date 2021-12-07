@@ -89,7 +89,7 @@ am.tuner_bind(
 #     tuner="randomsearch",
     hyperparameters=None, 
     objective="val_accuracy",
-    max_trials=2,
+    max_trials=10,
     overwrite=True,
     exploration=0.3,
 )
