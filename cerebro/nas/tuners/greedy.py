@@ -303,7 +303,7 @@ class GreedySearch(SparkTuner):
         self.estimator_results = {}
         self.on_search_begin()
         while True:
-            trials = self.oracle.create_trials(self.parallelsim, self.tuner_id)
+            trials = self.oracle.create_trials(self.parallelism, self.tuner_id)
             running_trials = []
             for trial in trials:
                 if trial.status != trial_lib.TrialStatus.STOPPED:

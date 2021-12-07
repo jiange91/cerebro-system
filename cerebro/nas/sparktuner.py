@@ -9,13 +9,15 @@ from tensorflow._api.v2 import data
 from tensorflow.python.util import nest
 from tensorflow.keras.layers.experimental import preprocessing
 import collections
+import numpy as np
+import json
 
 from tensorflow.keras import callbacks as tf_callbacks
 from autokeras.utils import utils, data_utils
 from autokeras.engine.tuner import AutoTuner
 from autokeras import keras_layers
 
-from ..tune.base import ModelSelection, update_model_results
+from ..tune.base import ModelSelection, update_model_results, ModelSelectionResult
 from keras_tuner.engine import trial as trial_lib
 
 
@@ -38,7 +40,7 @@ class SparkTuner(kt.engine.tuner.Tuner):
             **kwargs):
         self._finished = False
         self.model_selection = model_selection
-        self.parallelsim = parallelism
+        self.parallelism = parallelism
         super().__init__(oracle, hypermodel, **kwargs)
 
     def _populate_initial_space(self):
@@ -191,31 +193,65 @@ class SparkTuner(kt.engine.tuner.Tuner):
         i = 0
         ms = self.model_selection
         est_results = {}
+        self.tried_hps = {}
+        self.estimators = []
+        self.estimator_results = {}
         while i < self.oracle.max_trials:
-            print(i)
             trials = self.oracle.create_trials(1, self.tuner_id)
             trial = trials[0]
-            for opt in hp._hps['optimizer'][0].values:
-                for lr in hp._hps['learning_rate'][0].values:
-                    for bs in hp._hps['batch_size'][0].values:
-                        if i < self.oracle.max_trials:
-                            estimator = self.trial_from_config_to_est(
-                                trial=trial,
-                                dataset=dataset,
-                                learning_rate=lr,
-                                batch_size=bs,
-                                optimizer=opt
-                            )
-                            est_results[estimator.getRunId()] = {}
-                            est_results[estimator.getRunId()]['trial'] = trial
-                            for epoch in range(epochs):
-                                train_epoch = ms.backend.train_for_one_epoch([estimator], ms.store, None, ms.feature_cols, ms.label_cols)
-                                update_model_results(est_results, train_epoch)
+            self.tried_hps[trial.trial_id] = {}
+            cur_max_trials = min(self.parallelism, self.oracle.max_trials - i)
+            estimators = self.fixed_arch_trial2ests(trial, hp, cur_max_trials, dataset)
+            if len(estimators) == 0:
+                break
+            print("Current number of trials: {}, generating {} this time".format(i, len(estimators)))
+            for estimator in estimators:
+                est_results[estimator.getRunId()] = {}
 
-                                val_epoch = ms.backend.train_for_one_epoch([estimator], ms.store, None, ms.feature_cols, ms.label_cols, is_train=False)
-                                update_model_results(est_results, val_epoch)
-                            i = i+1
-        return est_results 
+            for epoch in range(epochs):
+                train_epoch = ms.backend.train_for_one_epoch(estimators, ms.store, None, ms.feature_cols, ms.label_cols)
+                update_model_results(est_results, train_epoch)
+
+                val_epoch = ms.backend.train_for_one_epoch(estimators, ms.store, None, ms.feature_cols, ms.label_cols, is_train=False)
+                update_model_results(est_results, val_epoch)
+                ms._log_epoch_metrics_to_tensorboard(estimators,est_results)
+                with open("/var/nfs/tmp_rel.txt", "w") as file:
+                    file.write(json.dumps(est_results))
+
+                for est in estimators:
+                    self.estimators.append(est)
+                    self.estimator_results[est.getRunId()] = est_results[est.getRunId()]
+            i = i + len(estimators)
+
+        models = [est.create_model(self.estimator_results[est.getRunId()], est.getRunId(), metadata) for est in self.estimators]
+        val_metrics = [self.estimator_results[est.getRunId()]['val_' + self.model_selection.evaluation_metric][-1] for est in self.estimators]
+        best_model_idx = np.argmax(val_metrics) if self.oracle.objective.direction == "max"else np.argmin(val_metrics)
+        best_model = models[best_model_idx]
+
+        return ModelSelectionResult(best_model, self.estimator_results, models, [x+'__output' for x in self.model_selection.label_cols])
+
+    def fixed_arch_trial2ests(self, trial, hp, cur_max_trials, dataset):
+        i = 0
+        ests = []
+        for opt in hp._hps['optimizer'][0].values:
+            for lr in hp._hps['learning_rate'][0].values:
+                for bs in hp._hps['batch_size'][0].values:
+                    if i >= cur_max_trials:
+                        break
+                    elif (opt,lr,bs) in self.tried_hps[trial.trial_id] and self.tried_hps[trial.trial_id][(opt,lr,bs)]:
+                        continue
+                    else:
+                        self.tried_hps[trial.trial_id][(opt,lr,bs)] = True
+                        estimator = self.trial_from_config_to_est(
+                            trial=trial,
+                            dataset=dataset,
+                            learning_rate=lr,
+                            batch_size=bs,
+                            optimizer=opt
+                        )
+                        ests.append(estimator)
+                        i = i + 1
+        return ests
 
     def trials2estimators(self, trials, dataset):
         ests = []

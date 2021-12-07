@@ -185,7 +185,7 @@ class FilesystemStore(Store):
         return os.path.join(self.get_run_path(run_id), self.get_logs_subdir())
 
     def get_checkpoint_filename(self):
-        return 'checkpoint.h5'
+        return 'checkpoint'
 
     def get_logs_subdir(self):
         return 'logs'

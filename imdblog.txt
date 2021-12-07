@@ -1,0 +1,18 @@
+CEREBRO => Time: 2021-12-06 21:21:00, Running 6 Workers
++--------------------+-----+
+|            features|label|
++--------------------+-----+
+|I've always been ...|    1|
+|This movie was Hi...|    1|
+|All you could eve...|    1|
+|This movie is hil...|    1|
+|BIG FAT LIAR, in ...|    1|
++--------------------+-----+
+only showing top 5 rows
+
+CEREBRO => Time: 2021-12-06 21:21:04, Preparing Data
+CEREBRO => Time: 2021-12-06 21:21:04, Num Partitions: 192
+CEREBRO => Time: 2021-12-06 21:21:04, Writing DataFrames
+CEREBRO => Time: 2021-12-06 21:21:04, Train Data Path: file:///var/nfs/test/intermediate_train_data
+CEREBRO => Time: 2021-12-06 21:21:04, Val Data Path: file:///var/nfs/test/intermediate_val_data
+CEREBRO => Time: 2021-12-06 21:21:07, Train Partitions: 153
