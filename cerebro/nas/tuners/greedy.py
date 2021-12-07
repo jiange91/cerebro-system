@@ -340,7 +340,7 @@ class GreedySearch(SparkTuner):
             update_model_results(est_results_log, val_epoch)
             self.on_epoch_end(estimators=estimators, est_resutls=est_results, epoch=epoch)
             ms._log_epoch_metrics_to_tensorboard(estimators, est_results_log)
-            with open("tmp_rel.txt", "w") as file:
+            with open("/var/nfs/tmp_rel.txt", "w") as file:
                 file.write(json.dumps(est_results_log))
             
         for est in estimators:
