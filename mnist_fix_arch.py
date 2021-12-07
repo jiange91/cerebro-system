@@ -43,7 +43,6 @@ store = LocalStore(prefix_path=work_dir + 'test/')
 #     .option("numFeatures", "784") \
 #     .load("data/mnist.scale") \
 
-
 df = spark.read.format("libsvm") \
     .option("numFeatures", "784") \
     .load(work_dir + "mnist/mnist.scale")
@@ -60,13 +59,21 @@ encoded = encoder_model.transform(df)
 feature_columns=['features']
 label_columns=['label_OHE']
 train_df, test_df = encoded.randomSplit([0.8, 0.2], seed=100)
-prep_df = train_df.select(feature_columns).sample(0.0002, seed=10)
+prep_df = train_df.sample(0.0002, seed=10)
 
-from keras_tuner.engine import hyperparameters
+from keras_tuner import HyperParameters
 import autokeras as ak
 from cerebro.nas.hphpmodel import HyperHyperModel
+from keras_tuner.engine import hyperparameters
+
 
 img_shape = (28, 28, 1)
+num_classes = 10
+
+hp = HyperParameters()
+hp.Choice('optimizer', values=['adam'])
+hp.Choice('learning_rate', values=[0.001,0.0001])
+hp.Choice('batch_size', values=[32,64])
 
 input_node = ak.ImageInput()
 output_node = ak.ConvBlock(
@@ -86,16 +93,45 @@ am.resource_bind(
 )
 
 am.tuner_bind(
-    tuner="greedy", 
-#     tuner="randomsearch",
-    hyperparameters=None, 
+    tuner="randomsearch", 
+    hyperparameters=hp, 
     objective="val_accuracy",
-    max_trials=2,
+    max_trials=20,
     overwrite=True,
-    exploration=0.3,
 )
 
-rel = am.fit(train_df, epochs=2, input_shape=img_shape)
+_, _, meta_data, _ = am.sys_setup(train_df)
+
+x = np.array(prep_df.select(feature_columns).collect())
+y = np.array(prep_df.select(label_columns).collect())
+x = [x[:,i] for i in range(x.shape[1])]
+x = [r.reshape((-1, *img_shape)) for r in x]
+y = np.squeeze(y,1)
+
+print(x[0].shape)
+print(y.shape)
+
+dataset, validation_data = am._convert_to_dataset(
+    x=x, y=y, validation_data=None, batch_size=32
+)
+
+am._analyze_data(dataset)
+am.tuner.hyper_pipeline = None
+am.tuner.hypermodel.hyper_pipeline = None
+tuner = am.tuner
+tuner.hypermodel.hypermodel.set_fit_args(0.2, epochs=100)
+
+hp = tuner.oracle.get_space()
+tuner._prepare_model_IO(hp, dataset=dataset)
+tuner.hypermodel.build(hp)
+tuner.oracle.update_space(hp)
+
+rel = tuner.fixed_arch_search(
+    hp=hp,
+    metadata=meta_data,
+    epoch=5,
+    x=dataset
+)
 
 import json
 m = {}

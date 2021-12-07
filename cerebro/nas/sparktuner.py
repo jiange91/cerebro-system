@@ -197,14 +197,14 @@ class SparkTuner(kt.engine.tuner.Tuner):
         self.estimators = []
         self.estimator_results = {}
         while i < self.oracle.max_trials:
-            print(i)
             trials = self.oracle.create_trials(1, self.tuner_id)
             trial = trials[0]
             self.tried_hps[trial.trial_id] = {}
-            cur_max_trials = min(self.parallelism, self.oracle.max_trials)
+            cur_max_trials = min(self.parallelism, self.oracle.max_trials - i)
             estimators = self.fixed_arch_trial2ests(trial, hp, cur_max_trials, dataset)
             if len(estimators) == 0:
                 break
+            print("Current number of trials: {}, generating {} this time".format(i, len(estimators)))
             for estimator in estimators:
                 est_results[estimator.getRunId()] = {}
 
@@ -236,10 +236,10 @@ class SparkTuner(kt.engine.tuner.Tuner):
         for opt in hp._hps['optimizer'][0].values:
             for lr in hp._hps['learning_rate'][0].values:
                 for bs in hp._hps['batch_size'][0].values:
-                    if self.tried_hps[trial.trial_id][(opt,lr,bs)]:
-                        continue
-                    elif i >= cur_max_trials:
+                    if i >= cur_max_trials:
                         break
+                    elif (opt,lr,bs) in self.tried_hps[trial.trial_id] and self.tried_hps[trial.trial_id][(opt,lr,bs)]:
+                        continue
                     else:
                         self.tried_hps[trial.trial_id][(opt,lr,bs)] = True
                         estimator = self.trial_from_config_to_est(
@@ -250,6 +250,7 @@ class SparkTuner(kt.engine.tuner.Tuner):
                             optimizer=opt
                         )
                         ests.append(estimator)
+                        i = i + 1
         return ests
 
     def trials2estimators(self, trials, dataset):
