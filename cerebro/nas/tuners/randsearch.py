@@ -6,6 +6,7 @@ from keras_tuner.engine import trial as trial_lib, tuner
 from ...tune.base import ModelSelection, update_model_results, ModelSelectionResult
 from typing import Optional, List, Any, Dict
 import numpy as np
+import json
 
 class RandomSearchOracle(CerebroOracle):
     def __init__(
@@ -113,7 +114,7 @@ class RandomSearch(SparkTuner):
         self.estimator_results = {}
         self.on_search_begin()
         while True:
-            trials = self.oracle.create_trials(self.parallelsim, self.tuner_id)
+            trials = self.oracle.create_trials(self.parallelism, self.tuner_id)
             # for trial in trials:
             #     print(trial.status)
             running_trials = []
@@ -150,6 +151,8 @@ class RandomSearch(SparkTuner):
             update_model_results(est_results_log, val_epoch)
             self.on_epoch_end(estimators=estimators, est_resutls=est_results, epoch=epoch)
             ms._log_epoch_metrics_to_tensorboard(estimators, est_results_log)
+            with open("/var/nfs/tmp_rel.txt", "w") as file:
+                file.write(json.dumps(est_results_log))
         
         for est in estimators:
             self.estimators.append(est)
