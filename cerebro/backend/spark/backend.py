@@ -171,6 +171,7 @@ class SparkBackend(Backend):
                 task_client.initialize_data_loaders(data_readers_fn)
 
             self.data_loaders_initialized = False
+            self.data_readers_fn = data_readers_fn
         else:
             raise Exception('Spark tasks not initialized for Cerebro. Please run SparkBackend.initialize_workers() '
                             'first!')

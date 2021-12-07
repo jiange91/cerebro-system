@@ -250,7 +250,7 @@ class HyperHyperModel(object):
         else:
             x = np.array(df.select(ms.feature_cols).head(10))
             y = np.array(df.select(ms.label_cols).head(10))
-            x = [x[:,i,...,np.newaxis] for i in range(x.shape[1])]
+            x = [x[:,i,...] for i in range(x.shape[1])]
             y = np.squeeze(y,1)
         if len(y.shape) > 2:
             raise ValueError(
@@ -303,6 +303,7 @@ class HyperHyperModel(object):
         """
         ms = self.model_selection
         backend = ms.backend
+        _, _, metadata, _ = backend.get_metadata_from_parquet(ms.store, ms.label_cols, ms.feature_cols)
 
         if ms.verbose >= 1: print(
             'CEREBRO => Time: {}, Initializing Workers'.format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
@@ -323,8 +324,10 @@ class HyperHyperModel(object):
         else:
             x = np.array(df.select(ms.feature_cols).head(10))
             y = np.array(df.select(ms.label_cols).head(10))
-            x = [x[:,i,...,np.newaxis] for i in range(x.shape[1])]
+            x = [x[:,i,...] for i in range(x.shape[1])]
             y = np.squeeze(y,1)
+            print(y.shape)
+            print(y.shape[1:])
         if len(y.shape) > 2:
             raise ValueError(
                 "We do not support multiple labels. Expect the target data for {name} to have shape "
