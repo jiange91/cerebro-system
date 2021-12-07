@@ -107,7 +107,7 @@ def spark_to_petastorm_type(dtype):
         return np.int32
     elif dtype == StringType:
         # return np.uint8
-        return str
+        return np.str_
     elif dtype == FloatType:
         return np.float32
     elif dtype == BinaryType:
@@ -442,8 +442,8 @@ def create_array(x, k, dtype):
     if dtype == np.uint8:
         return np.frombuffer(x[k].encode(), dtype=dtype)
         # return x[k]
-    elif dtype == str:
-        return str(x[k])
+    elif dtype == np.str_:
+        return np.str_(x[k])
     else:
         return np.array(x[k], dtype=dtype)
 
