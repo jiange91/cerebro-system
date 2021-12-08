@@ -130,5 +130,5 @@ for model in rel.metrics:
     for key in rel.metrics[model]:
         if key != 'trial':
             m[model][key] = rel.metrics[model][key]
-with open("mnist_nas_logs.txt", "w") as file:
+with open("mnist_fix_arch_logs.txt", "w") as file:
     file.write(json.dumps(m))

@@ -79,6 +79,6 @@ am.tuner_bind(
 rel = am.fit(train_df, epochs=2, input_shape=img_shape)
 
 
-with open("mnist_nas_logs.txt", "w") as file:
+with open("mnist_fix_arch_logs.txt", "w") as file:
     file.writelines(rel.metrics)
 

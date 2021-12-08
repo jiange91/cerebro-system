@@ -94,5 +94,17 @@ am.tuner_bind(
 
 rel = am.fit(train_df, epochs=1, input_shape=img_shape)
 
-with open("mnist_nas_logs.txt", "w") as file:
+<<<<<<< Updated upstream
+with open("mnist_fix_arch_logs.txt", "w") as file:
     file.writelines(rel.metrics)
+=======
+import json
+m = {}
+for model in rel.metrics:
+    m[model] = {}
+    for key in rel.metrics[model]:
+        if key != 'trial':
+            m[model][key] = rel.metrics[model][key]
+with open("exp_logs/mnist_fixarch_tb/mnist_fix_arch_logs.txt", "w") as file:
+    file.write(json.dumps(m))
+>>>>>>> Stashed changes
