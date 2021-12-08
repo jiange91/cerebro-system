@@ -24,7 +24,7 @@ from pyspark import SparkConf
 
 conf = SparkConf().setAppName('cluster') \
     .setMaster('spark://10.10.1.1:7077') \
-    .set('spark.task.cpus', '16') \
+    .set('spark.task.cpus', '24') \
     .set('spark.executor.memory', '124g')
 spark = SparkSession.builder.config(conf=conf).getOrCreate()
 spark.sparkContext.addPyFile("cerebro.zip")
@@ -73,7 +73,7 @@ with open ('/var/nfs/cifar10/prep_np/prep.npy', 'rb') as f:
     prep_x = np.load(f)
     prep_y = np.load(f)
 
-rel = am.fit_on_prepared_data(prep_x=prep_x, prep_y=prep_y, batch_size=64, epochs=5, input_shape=img_shape)
+rel = am.fit_on_prepared_data(prep_x=prep_x, prep_y=prep_y, batch_size=128, epochs=50, input_shape=img_shape)
 
 import json
 m = {}
@@ -82,5 +82,5 @@ for model in rel.metrics:
     for key in rel.metrics[model]:
         if key != 'trial':
             m[model][key] = rel.metrics[model][key]
-with open("mnist_nas_logs.txt", "w") as file:
+with open("cifar_nas_logs.txt", "w") as file:
     file.write(json.dumps(m))
