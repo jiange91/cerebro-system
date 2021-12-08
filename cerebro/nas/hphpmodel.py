@@ -1,4 +1,5 @@
 
+import pyspark
 from .tuners.randsearch import RandomSearch
 from .tuners.greedy import GreedySearch
 from .tuners.gridsearch import GridSearch
@@ -295,6 +296,8 @@ class HyperHyperModel(object):
         callbacks=None,
         verbose=1,
         input_shape = None,
+        prep_x = None,
+        prep_y = None,
         **kwargs
     ):
 
@@ -315,19 +318,22 @@ class HyperHyperModel(object):
                 datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
         backend.initialize_data_loaders(ms.store, None, ms.feature_cols + ms.label_cols)
 
-        if input_shape and type(input_shape) is int or type(input_shape) is tuple:
+
+        if df and type(df) is pyspark.sql.dataframe.DataFrame:
             x = np.array(df.select(ms.feature_cols).head(10))
             y = np.array(df.select(ms.label_cols).head(10))
-            x = [x[:,i] for i in range(x.shape[1])]
-            x = [r.reshape((-1, *input_shape)) for r in x]
-            y = np.squeeze(y,1)
+            if input_shape and type(input_shape) is int or type(input_shape) is tuple:
+                x = [x[:,i] for i in range(x.shape[1])]
+                x = [r.reshape((-1, *input_shape)) for r in x]
+                y = np.squeeze(y,1)
+            else:
+                x = [x[:,i,...] for i in range(x.shape[1])]
+                y = np.squeeze(y,1)
         else:
-            x = np.array(df.select(ms.feature_cols).head(10))
-            y = np.array(df.select(ms.label_cols).head(10))
-            x = [x[:,i,...] for i in range(x.shape[1])]
-            y = np.squeeze(y,1)
-            print(y.shape)
-            print(y.shape[1:])
+            x = prep_x
+            y = prep_y
+            if input_shape and type(input_shape) is int or type(input_shape) is tuple:
+                x = x.reshape((-1, *input_shape))
         if len(y.shape) > 2:
             raise ValueError(
                 "We do not support multiple labels. Expect the target data for {name} to have shape "
