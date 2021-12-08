@@ -49,7 +49,8 @@ input_node = ak.ImageInput()
 output_node = ak.ConvBlock()(input_node)
 output_node = ak.ClassificationHead()(output_node)
 am = HyperHyperModel(input_node, output_node, seed=2000)
-
+feature_columns = ['image']
+label_columns = ['label']
 am.resource_bind(
     backend=backend, 
     store=store,
@@ -63,7 +64,7 @@ am.tuner_bind(
 #     tuner="randomsearch",
     hyperparameters=None, 
     objective="val_accuracy",
-    max_trials=10,
+    max_trials=20,
     overwrite=True,
     exploration=0.3,
 )
@@ -72,7 +73,7 @@ with open ('/var/nfs/cifar10/prep_np/prep.npy', 'rb') as f:
     prep_x = np.load(f)
     prep_y = np.load(f)
 
-rel = am.fit_on_prepared_data(prep_x=prep_x, prep_y=prep_y, batch_size=64, epochs=5)
+rel = am.fit_on_prepared_data(prep_x=prep_x, prep_y=prep_y, batch_size=64, epochs=5, input_shape=img_shape)
 
 import json
 m = {}

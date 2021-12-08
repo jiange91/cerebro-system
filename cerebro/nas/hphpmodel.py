@@ -290,7 +290,7 @@ class HyperHyperModel(object):
     
     def fit_on_prepared_data(
         self,
-        df,
+        df=None,
         batch_size=32,
         epochs=None,
         callbacks=None,
