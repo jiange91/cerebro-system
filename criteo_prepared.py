@@ -39,7 +39,7 @@ from cerebro.nas.hphpmodel import HyperHyperModel
 
 # Define the search space
 input_node = ak.StructuredDataInput()
-otuput_node = ak.DenseBlock(num_layers=1, num_units=16)(input_node)
+otuput_node = ak.DenseBlock(num_units=16)(input_node)
 output_node = ak.ClassificationHead(num_classes=2, multi_label=True)(otuput_node)
 
 am = HyperHyperModel(input_node, output_node, seed=2500)
@@ -53,12 +53,12 @@ am.resource_bind(
 )
 
 am.tuner_bind(
-    tuner="greedy", 
+    tuner="randomsearch", 
     hyperparameters=None, 
     objective="val_accuracy",
     max_trials=20,
     overwrite=True,
-    exploration=0.3,
+#     exploration=0.3,
 )
 
 prepare_df = spark.read.parquet(work_dir+"limit/criteo/train.parquet")
