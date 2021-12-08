@@ -39,40 +39,14 @@ work_dir = '/var/nfs/'
 backend = SparkBackend(spark_context=spark.sparkContext, num_workers=6)
 store = LocalStore(prefix_path=work_dir + 'test/')
 
-# df = spark.read.format("libsvm") \
-#     .option("numFeatures", "784") \
-#     .load("data/mnist.scale") \
-
-
-df = spark.read.format("libsvm") \
-    .option("numFeatures", "784") \
-    .load(work_dir + "mnist/mnist.scale")
-
-from pyspark.ml.feature import OneHotEncoderEstimator
-
-encoder = OneHotEncoderEstimator(dropLast=False)
-encoder.setInputCols(["label"])
-encoder.setOutputCols(["label_OHE"])
-
-encoder_model = encoder.fit(df)
-encoded = encoder_model.transform(df)
-
-feature_columns=['features']
-label_columns=['label_OHE']
-train_df, test_df = encoded.randomSplit([0.8, 0.2], seed=100)
-
 from keras_tuner.engine import hyperparameters
 import autokeras as ak
 from cerebro.nas.hphpmodel import HyperHyperModel
 
-img_shape = (28, 28, 1)
+img_shape = (32, 32, 3)
 
 input_node = ak.ImageInput()
-output_node = ak.ConvBlock(
-    kernel_size=hyperparameters.Fixed('kernel_size', value=3),
-    num_blocks=hyperparameters.Fixed('num_blocks', value=1),
-    num_layers=hyperparameters.Fixed('num_layers', value=2),
-)(input_node)
+output_node = ak.ConvBlock()(input_node)
 output_node = ak.ClassificationHead()(output_node)
 am = HyperHyperModel(input_node, output_node, seed=2000)
 
@@ -94,7 +68,11 @@ am.tuner_bind(
     exploration=0.3,
 )
 
-rel = am.fit(train_df, epochs=2, input_shape=img_shape)
+with open ('/var/nfs/cifar10/prep_np/prep.npy', 'rb') as f:
+    prep_x = np.load(f)
+    prep_y = np.load(f)
+
+rel = am.fit_on_prepared_data(prep_x=prep_x, prep_y=prep_y, batch_size=64, epochs=5)
 
 import json
 m = {}
