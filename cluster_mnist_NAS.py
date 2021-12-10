@@ -105,6 +105,6 @@ for model in rel.metrics:
     for key in rel.metrics[model]:
         if key != 'trial':
             m[model][key] = rel.metrics[model][key]
-with open("exp_logs/mnist_fixarch_tb/mnist_fix_arch_logs.txt", "w") as file:
+with open("exp_visualization/mnist_fixarch_tb/mnist_fix_arch_logs.txt", "w") as file:
     file.write(json.dumps(m))
 >>>>>>> Stashed changes

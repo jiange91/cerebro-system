@@ -135,6 +135,6 @@ for model in rel.metrics:
 with open("mnist_fix_arch_logs.txt", "w") as file:
     file.write(json.dumps(m))
 =======
-with open("exp_logs/mnist_fixarch_tb/mnist_fix_arch_logs.txt", "w") as file:
+with open("exp_visualization/mnist_fixarch_tb/mnist_fix_arch_logs.txt", "w") as file:
     file.write(json.dumps(m))
 >>>>>>> Stashed changes:mnist_fix_arch.py
