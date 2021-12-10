@@ -334,12 +334,15 @@ class SparkEstimator(PySparkEstimator, SparkEstimatorParams, SparkEstimatorParam
         floatx = keras_module.backend.floatx()
         custom_objects = self.getCustomObjects()
         serialized_model = self._load_model_from_checkpoint(run_id)
+        store = self.getStore()
+        last_ckpt_path = store.get_checkpoint_path(run_id)
 
         def load_model_fn(x):
             with keras_module.utils.custom_object_scope(custom_objects):
                 return keras_module.models.load_model(x)
 
         model = keras_utils.deserialize_model(serialized_model, load_model_fn=load_model_fn)
+        # model = tf.keras.models.load_model(last_ckpt_path)
         return self.get_model_class()(**self._get_model_kwargs(model, history, run_id, metadata, floatx))
 
     def get_model_class(self):

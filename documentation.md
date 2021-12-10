@@ -33,6 +33,8 @@ from cerebro.storage import LocalStore
 
 backend = SparkBackend(spark_context=sc, num_workers=1)
 store = LocalStore(prefix_path='Your data directory')
+feature_columns = ['features']
+label_columns = ['label']
 ```
 
 Then create a HyperModel using our API, and bind the resources to the hypermodel. You could assign the input and output
@@ -53,7 +55,13 @@ am = HyperHyperModel(
     inputs=input_node, outputs=output_node, overwrite=True, max_trials=1000
 )
 
-am.resource_bind(backend=backend, store=store)
+am.resource_bind(
+    backend=backend, 
+    store=store,
+    feature_columns=feature_columns,
+    label_columns=label_columns,
+    evaluation_metric='accuracy', 
+)
 ```
 
 Or to make things easier, you could only assign the output head type to the hypermodel and wait for the NAS algorithm to 
@@ -70,7 +78,13 @@ am = HyperHyperModel(
     inputs=input_node, outputs=output_node, overwrite=True, max_trials=1000
 )
 
-am.resource_bind(backend=backend, store=store)
+am.resource_bind(
+    backend=backend, 
+    store=store,
+    feature_columns=feature_columns,
+    label_columns=label_columns,
+    evaluation_metric='accuracy', 
+)
 ```
 
 Then create a HyperParameters object and you could fix hyperparameters on your own will. After you create the 
@@ -81,22 +95,43 @@ from keras_tuner import HyperParameters
 
 hp = HyperParameters()
 hp.Fixed("learning_rate", value=0.0001)
-am.tuner_bind("hyperband", hyperparameters=hp)
+am.tuner_bind("greedy", 
+    hyperparameters=hp,
+    objective="val_accuracy",
+    max_trials=20,
+    overwrite=True,
+    exploration=0.3,
+)
 ```
 
-Then we can start training with Spark DataFrame. So far you have to build a spark pipeline for data preprocessing.
+Before we can start training, we may prepare the data and apply necessary preprocessing steps.
 
 ```python
-df = spark.read.format("libsvm").load("sample_libsvm_data.txt").repartition(8)
-train_df, test_df = df.randomSplit([0.8, 0.2])
+df = spark.read.format("libsvm") \
+    .option("numFeatures", "784") \
+    .load(work_dir + "mnist/mnist.scale")
 
-am.fit(train_df)
+from pyspark.ml.feature import OneHotEncoderEstimator
 
-predict_result = am.predict(test_df)
-best_model = am.export_model()
+encoder = OneHotEncoderEstimator(dropLast=False)
+encoder.setInputCols(["label"])
+encoder.setOutputCols(["label_OHE"])
+
+encoder_model = encoder.fit(df)
+encoded = encoder_model.transform(df)
+
+feature_columns=['features']
+label_columns=['label_OHE']
+train_df, test_df = encoded.randomSplit([0.8, 0.2], seed=100)
 ```
 
-You can read the summary by calling the `search_space_summary()` method.
+Then call the fit method and retrieve ModelSelectionResult
+```python
+img_shape = (28,28,1)
+rel = am.fit(train_df, epochs=5, input_shape=img_shape)
+```
+
+You can read the search space summary by calling the `search_space_summary()` method.
 
 ```python
 am.tuner.search_space_summary()
@@ -148,31 +183,7 @@ contradiction with PySpark and cause ImportError, I did not put it in this repos
 When creating an experiment on CloudLab, a node with hardware type that has higher disk size and memory size is more ideal. 
 But it is not always possible to get an available one. Check [cluster status](https://www.cloudlab.us/resinfo.php) here
 
-After entering the shell of a node:
- 
-```bash
-git clone https://github.com/jiange91/cerebro-system.git
-cd cerebro-system
-```
-Since the `bootstrap.sh` script is completed under Windows OS, need to manually change the file format.
-
-```bash
-sed -i "s/\r//" bootstrap.sh
-```
-
-Then run the script to set up the environment
-```bash
-sudo chmod 777 bootstrap.sh
-sudo ./bootstrap.sh
-```
-
-Note that please DO NOT miss the `sudo` when execute the `bootstrap.sh`.
-
-When the environment is successfully set, you will see a message in the console saying:
-
-```bash
-Bootstraping complete
-```
+We used this [profile](https://github.com/jiange91/spark-nas-profile.git) to set up the cluster.
 
 For the master node, to download the Criteo dataset, please also add permissions to the script `download_data.sh`
 and run this script in the above manner.
