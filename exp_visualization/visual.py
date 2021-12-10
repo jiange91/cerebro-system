@@ -80,7 +80,7 @@ def draw_two_plots(train_trials, valid_trials, plot1_path=None, plot2_path=None,
     plt.tick_params(labelsize=16)
     plt.xticks([epoch for epoch in range(1, max_epoch+1)], [epoch for epoch in range(1, max_epoch+1)], fontsize=18)
     if save and plot1_path is not None and plot2_path is not None:
-        plt.savefig(plot1_path, dpi=150)
+        plt.savefig(plot1_path, dpi=150, bbox_inches='tight')
     else:
         plt.show()
 
@@ -89,15 +89,16 @@ def draw_two_plots(train_trials, valid_trials, plot1_path=None, plot2_path=None,
     max_timestamp = 0
     min_timestamp = 99999999999999999999999999999999999999999
     for trial in train_trials:
-        plt.plot(trial[0], trial[2], linewidth=3, marker="o", alpha=0.8)
         if max(trial[0]) > max_timestamp:
             max_timestamp = max(trial[0])
         if min(trial[0]) < min_timestamp:
             min_timestamp = min(trial[0])
+    for trial in train_trials:
+        plt.plot([timestamp - min_timestamp for timestamp in trial[0]], trial[2], linewidth=3, marker="o", alpha=0.7)
     plt.ylabel("Train Accuracy", fontsize=20)
-    plt.xlabel("Timestamp", fontsize=20)
+    plt.xlabel("Time (s)", fontsize=20)
     plt.title("Accuracy on Training set", fontsize=20)
-    timestamp = [int(num) for num in np.linspace(min_timestamp, max_timestamp, num=5)]
+    timestamp = [int(num) for num in np.linspace(0, max_timestamp-min_timestamp, num=5)]
     plt.xticks(timestamp, timestamp, fontsize=14)
     plt.tick_params(labelsize=16)
 
@@ -105,19 +106,20 @@ def draw_two_plots(train_trials, valid_trials, plot1_path=None, plot2_path=None,
     max_timestamp = 0
     min_timestamp = 99999999999999999999999999999999999999999
     for trial in valid_trials:
-        plt.plot(trial[0], trial[2], linewidth=3, marker="o", alpha=0.7)
         if max(trial[0]) > max_timestamp:
             max_timestamp = max(trial[0])
         if min(trial[0]) < min_timestamp:
             min_timestamp = min(trial[0])
+    for trial in valid_trials:
+        plt.plot([timestamp - min_timestamp for timestamp in trial[0]], trial[2], linewidth=3, marker="o", alpha=0.7)
     plt.ylabel("Validation Accuracy", fontsize=20)
-    plt.xlabel("Timestamp", fontsize=20)
+    plt.xlabel("Time (s)", fontsize=20)
     plt.title("Accuracy on Validation set", fontsize=20)
-    timestamp = [int(num) for num in np.linspace(min_timestamp, max_timestamp, num=5)]
+    timestamp = [int(num) for num in np.linspace(0, max_timestamp-min_timestamp, num=5)]
     plt.xticks(timestamp, timestamp, fontsize=14)
     plt.tick_params(labelsize=16)
     if save and plot1_path is not None and plot2_path is not None:
-        plt.savefig(plot2_path, dpi=150)
+        plt.savefig(plot2_path, dpi=150, bbox_inches='tight')
     else:
         plt.show()
 
@@ -148,7 +150,7 @@ def draw_single_plots(train_trials, valid_trials, plot1_path=None, save=False):
     plt.tick_params(labelsize=18)
     plt.xticks([epoch for epoch in range(1, max_epoch+1)], [epoch for epoch in range(1, max_epoch+1)], fontsize=18)
     if save and plot1_path is not None:
-        plt.savefig(plot1_path, dpi=150)
+        plt.savefig(plot1_path, dpi=150, bbox_inches='tight')
     else:
         plt.show()
 
@@ -220,23 +222,23 @@ plt.ylabel("Validation Accuracy", fontsize=20)
 plt.xlabel("Epoch", fontsize=20)
 plt.title("Accuracy on Validation set", fontsize=20)
 plt.tick_params(labelsize=16)
-plt.savefig("plots/cifar10_nas_greedy_accuracy_epoch.jpg", dpi=150)
-plt.show()
+plt.savefig("plots/cifar10_nas_greedy_accuracy_epoch.jpg", dpi=150, bbox_inches='tight')
 
 plt.figure(figsize=(20, 10))
 plt.subplot(121)
 max_timestamp = 0
 min_timestamp = 99999999999999999999999999999999999999999
 for trial in cifar_10_train:
-    plt.plot(trial[0], trial[2], linewidth=3, marker="o", alpha=0.8)
     if max(trial[0]) > max_timestamp:
         max_timestamp = max(trial[0])
     if min(trial[0]) < min_timestamp:
         min_timestamp = min(trial[0])
+for trial in cifar_10_valid:
+    plt.plot([timestamp - min_timestamp for timestamp in trial[0]], trial[2], linewidth=3, marker="o", alpha=0.7)
 plt.ylabel("Train Accuracy", fontsize=20)
-plt.xlabel("Timestamp", fontsize=20)
+plt.xlabel("Time (s)", fontsize=20)
 plt.title("Accuracy on Training set", fontsize=20)
-timestamp = [int(num) for num in np.linspace(min_timestamp, max_timestamp, num=5)]
+timestamp = [int(num) for num in np.linspace(0, max_timestamp-min_timestamp, num=5)]
 plt.xticks(timestamp, timestamp, fontsize=14)
 plt.tick_params(labelsize=16)
 
@@ -244,16 +246,17 @@ plt.subplot(122)
 max_timestamp = 0
 min_timestamp = 99999999999999999999999999999999999999999
 for trial in cifar_10_valid:
-    plt.plot(trial[0], trial[2], linewidth=3, marker="o", alpha=0.7)
     if max(trial[0]) > max_timestamp:
         max_timestamp = max(trial[0])
     if min(trial[0]) < min_timestamp:
         min_timestamp = min(trial[0])
+for trial in cifar_10_valid:
+    plt.plot([timestamp - min_timestamp for timestamp in trial[0]], trial[2], linewidth=3, marker="o", alpha=0.7)
 plt.ylabel("Validation Accuracy", fontsize=20)
-plt.xlabel("Timestamp", fontsize=20)
+plt.xlabel("Time (s)", fontsize=20)
 plt.title("Accuracy on Validation set", fontsize=20)
-timestamp = [int(num) for num in np.linspace(min_timestamp, max_timestamp, num=5)]
+timestamp = [int(num) for num in np.linspace(0, max_timestamp-min_timestamp, num=5)]
 plt.xticks(timestamp, timestamp, fontsize=14)
 plt.tick_params(labelsize=16)
-plt.savefig("plots/cifar10_nas_greedy_accuracy_time.jpg", dpi=150)
+plt.savefig("plots/cifar10_nas_greedy_accuracy_time.jpg", dpi=150, bbox_inches='tight')
 
