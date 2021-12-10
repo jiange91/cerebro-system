@@ -10,7 +10,7 @@ resource-efficient manner. Detailed technical information about ``Cerebro`` can 
 
 Documentation
 -------------
-Detailed documentation about the system can be found [here](https://adalabucsd.github.io/cerebro-system/).
+Detailed documentation about the system can be found [here](https://github.com/jiange91/cerebro-system/blob/master/documentation.md).
 
 Acknowledgement
 ---------------
