@@ -28,19 +28,20 @@ import os
 os.environ["PYSPARK_PYTHON"] = '/usr/bin/python3.6'
 os.environ["PYSPARK_DRIVER_PYTHON"] = '/usr/bin/python3.6'
 
-conf = SparkConf().setAppName('training') \
-    .setMaster('spark://10.10.1.1:7077') \
-    .set('spark.task.cpus', '40')
-spark = SparkSession.builder.config(conf=conf).getOrCreate()
-spark.sparkContext.addPyFile("cerebro.zip")
+spark = SparkSession \
+    .builder \
+    .appName("Cerebro Example") \
+    .getOrCreate()
 
-work_dir = '/var/nfs/'
+...
+work_dir = '/mnist_hp_exp/'
 backend = SparkBackend(spark_context=spark.sparkContext, num_workers=2)
 store = LocalStore(prefix_path=work_dir + 'test/')
 
 df = spark.read.format("libsvm") \
     .option("numFeatures", "784") \
-    .load(work_dir+"data/mnist.scale") \
+    .load("data/mnist.scale") \
+
 
 
 encoder = OneHotEncoderEstimator(dropLast=False)
@@ -81,12 +82,11 @@ am.resource_bind(
 )
 
 am.tuner_bind(
-    tuner="greedy",
+    tuner="randomsearch",
     hyperparameters=hp,
     objective="val_accuracy",
     max_trials=2,
     overwrite=True,
-    exploration=0.3
 )
 
 _, _, meta_data, _ = am.sys_setup(train_df)
@@ -123,18 +123,3 @@ rel = tuner.fixed_arch_search(
     x=dataset
 )
 
-
-import json
-m = {}
-for model in rel.metrics:
-    m[model] = {}
-    for key in rel.metrics[model]:
-        if key != 'trial':
-            m[model][key] = rel.metrics[model][key]
-<<<<<<< Updated upstream:mnist_greedy_remote.py
-with open("mnist_fix_arch_logs.txt", "w") as file:
-    file.write(json.dumps(m))
-=======
-with open("exp_visualization/mnist_fixarch_tb/mnist_fix_arch_logs.txt", "w") as file:
-    file.write(json.dumps(m))
->>>>>>> Stashed changes:mnist_fix_arch.py

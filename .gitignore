@@ -142,4 +142,4 @@ cython_debug/
 *experiments/
 test/*
 **/*.ipynb_checkpoints/
-cerebro.zip
+envs/cerebro.zip
