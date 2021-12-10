@@ -89,12 +89,12 @@ am.tuner_bind(
 #     tuner="randomsearch",
     hyperparameters=None, 
     objective="val_accuracy",
-    max_trials=10,
+    max_trials=20,
     overwrite=True,
     exploration=0.3,
 )
 
-rel = am.fit(train_df, epochs=2, input_shape=img_shape)
+rel = am.fit(train_df, epochs=5, input_shape=img_shape)
 
 import json
 m = {}

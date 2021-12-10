@@ -46,8 +46,9 @@ from cerebro.nas.hphpmodel import HyperHyperModel
 img_shape = (32, 32, 3)
 
 input_node = ak.ImageInput()
-output_node = ak.ConvBlock()(input_node)
-output_node = ak.ClassificationHead()(output_node)
+output_node1 = ak.ConvBlock()(input_node)
+output_node2 = ak.ConvBlock()(output_node1)
+output_node = ak.ClassificationHead()(output_node1)
 am = HyperHyperModel(input_node, output_node, seed=2000)
 feature_columns = ['image']
 label_columns = ['label']
@@ -73,7 +74,7 @@ with open ('/var/nfs/cifar10/prep_np/prep.npy', 'rb') as f:
     prep_x = np.load(f)
     prep_y = np.load(f)
 
-rel = am.fit_on_prepared_data(prep_x=prep_x, prep_y=prep_y, batch_size=128, epochs=50, input_shape=img_shape)
+rel = am.fit_on_prepared_data(prep_x=prep_x, prep_y=prep_y, batch_size=128, epochs=100, input_shape=img_shape)
 
 import json
 m = {}
