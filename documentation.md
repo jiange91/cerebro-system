@@ -139,6 +139,66 @@ For other APIs you may need, please check out:
 3. [KerasTuner documentation](https://keras.io/api/keras_tuner/)
 
 
+### Run on CloudLab
+#### 1. Set up the environment
+
+You need to manually upload the profile.py to create a Profile on CloudLab, since the file profile.py will cause
+contradiction with PySpark and cause ImportError, I did not put it in this repository.
+
+When creating an experiment on CloudLab, a node with hardware type that has higher disk size and memory size is more ideal. 
+But it is not always possible to get an available one. Check [cluster status](https://www.cloudlab.us/resinfo.php) here
+
+After entering the shell of a node:
+ 
+```bash
+git clone https://github.com/jiange91/cerebro-system.git
+cd cerebro-system
+```
+Since the `bootstrap.sh` script is completed under Windows OS, need to manually change the file format.
+
+```bash
+sed -i "s/\r//" bootstrap.sh
+```
+
+Then run the script to set up the environment
+```bash
+sudo chmod 777 bootstrap.sh
+sudo ./bootstrap.sh
+```
+
+Note that please DO NOT miss the `sudo` when execute the `bootstrap.sh`.
+
+When the environment is successfully set, you will see a message in the console saying:
+
+```bash
+Bootstraping complete
+```
+
+For the master node, to download the Criteo dataset, please also add permissions to the script `download_data.sh`
+and run this script in the above manner.
+
+```bash
+sed -i "s/\r//" download_data.sh
+sudo chmod 777 download_data.sh
+sudo ./download_data.sh
+```
+
+The `download_data.sh` script uses [GDrive](https://github.com/prasmussen/gdrive) to download data from Google Drive and
+will ask for a verification code. Copy the url it gives you and paste it in the browser, and then you could  
+
+To run an experiment, you could directly run a Python file from the repository, but the process will be terminated
+once the console is closed. I have configed `tmux` in the environment. Check [this](https://blog.csdn.net/u014381600/article/details/54588531) 
+out for more information.
+
+You could also instantiate a Jupyter notebook.
+
+Note that if you use this script to initialize the environment in the profile, please make sure that you have at least
+one slave node in the LAN. This could be defined during the initialization process of CloudLab experiments.
+
+If you are running a cerebro system experiment, please also make sure that you use `sudo` for read and write permissions 
+when you call `python3 some_script_name.py`.
+
+
 ### Dependencies
 
 This is the dependencies of our project so far, 
