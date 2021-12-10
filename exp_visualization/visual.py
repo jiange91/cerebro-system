@@ -168,6 +168,13 @@ criteo_nas_random_train_accuracy = read_json_files("criteo_tb_log/json_data/rand
 criteo_nas_random_valid_accuracy = read_json_files("criteo_tb_log/json_data/random/val_accuracy")
 cifar_nas_greedy_train_accuracy = read_json_files("cifar10_tb_log/json_files/train")
 cifar_nas_greedy_valid_accuracy = read_json_files("cifar10_tb_log/json_files/valid")
+mnist_greedy_train_accuracy = read_json_files("mnist_greedy_tb/json files/train")
+mnist_greedy_valid_accuracy = read_json_files("mnist_greedy_tb/json files/valid")
+
+draw_two_plots(mnist_greedy_train_accuracy, mnist_greedy_valid_accuracy,
+               plot1_path="plots/mnist_nas_greedy_accuracy_epoch.jpg",
+               plot2_path="plots/mnist_nas_greedy_accuracy_time.jpg",
+               save=True)
 
 draw_two_plots(mnist_fixarch_train_accuracy, mnist_fixarch_valid_accuracy,
                plot1_path="plots/mnist_fixarch_accuracy_epoch.jpg",
@@ -194,9 +201,9 @@ draw_two_plots(criteo_nas_random_train_accuracy, criteo_nas_random_valid_accurac
 cifar_10_train = [[trial[0][::3], trial[1][::3], trial[2][::3]] for trial in cifar_nas_greedy_train_accuracy]
 cifar_10_valid = [[trial[0][::3], trial[1][::3], trial[2][::3]] for trial in cifar_nas_greedy_valid_accuracy]
 
-draw_single_plots(mnist_nas_greedy_valid_accuracy, mnist_nas_greedy_valid_accuracy,
-                  plot1_path="plots/mnist_nas_greedy_accuracy_time.jpg",
-                  save=True)
+# draw_single_plots(mnist_nas_greedy_valid_accuracy, mnist_nas_greedy_valid_accuracy,
+#                   plot1_path="plots/mnist_nas_greedy_accuracy_time.jpg",
+#                   save=True)
 
 # CIFAR-10
 
